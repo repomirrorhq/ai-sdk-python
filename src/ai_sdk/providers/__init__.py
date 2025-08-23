@@ -40,6 +40,7 @@ from .deepgram import DeepgramProvider, create_deepgram
 from .assemblyai import AssemblyAIProvider, create_assemblyai
 from .fal import FalProvider, create_fal
 from .hume import HumeProvider, create_hume
+from .lmnt import LMNTProvider, create_lmnt
 
 __all__ = [
     "Provider",
@@ -95,4 +96,6 @@ __all__ = [
     "create_fal",
     "HumeProvider",
     "create_hume",
+    "LMNTProvider",
+    "create_lmnt",
 ]
