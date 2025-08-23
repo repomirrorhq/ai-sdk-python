@@ -66,6 +66,7 @@ from .providers.cerebras import create_cerebras_provider as create_cerebras
 from .providers.fireworks import create_fireworks_provider as create_fireworks
 from .providers.replicate import create_replicate_provider as create_replicate
 from .providers.elevenlabs import create_elevenlabs
+from .providers.deepgram import create_deepgram
 
 # Errors
 from .errors import AISDKError, APIError, InvalidArgumentError
@@ -149,6 +150,7 @@ __all__ = [
     "create_fireworks",
     "create_replicate",
     "create_elevenlabs",
+    "create_deepgram",
     # Errors
     "AISDKError",
     "APIError", 

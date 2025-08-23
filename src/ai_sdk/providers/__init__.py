@@ -36,6 +36,7 @@ from .deepseek import DeepSeekProvider, create_deepseek_provider
 from .xai import XAIProvider
 from .deepinfra import DeepInfraProvider, create_deepinfra_provider
 from .elevenlabs import ElevenLabsProvider, create_elevenlabs
+from .deepgram import DeepgramProvider, create_deepgram
 
 __all__ = [
     "Provider",
@@ -83,4 +84,6 @@ __all__ = [
     "create_deepinfra_provider",
     "ElevenLabsProvider",
     "create_elevenlabs",
+    "DeepgramProvider",
+    "create_deepgram",
 ]
