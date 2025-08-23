@@ -25,6 +25,8 @@ from .openai import OpenAIProvider, create_openai
 from .anthropic import AnthropicProvider, create_anthropic
 from .google import GoogleProvider, create_google
 from .azure import AzureOpenAIProvider, create_azure
+from .groq import GroqProvider, create_groq
+from .together import TogetherAIProvider, create_together
 
 __all__ = [
     "Provider",
@@ -51,4 +53,8 @@ __all__ = [
     "create_google",
     "AzureOpenAIProvider",
     "create_azure",
+    "GroqProvider",
+    "create_groq",
+    "TogetherAIProvider",
+    "create_together",
 ]

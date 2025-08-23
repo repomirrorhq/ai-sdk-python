@@ -32,6 +32,8 @@ from .providers.openai import create_openai
 from .providers.anthropic import create_anthropic
 from .providers.google import create_google
 from .providers.azure import create_azure
+from .providers.groq import create_groq
+from .providers.together import create_together
 
 # Errors
 from .errors import AISDKError, APIError, InvalidArgumentError
@@ -71,6 +73,8 @@ __all__ = [
     "create_anthropic",
     "create_google",
     "create_azure",
+    "create_groq",
+    "create_together",
     # Errors
     "AISDKError",
     "APIError", 
