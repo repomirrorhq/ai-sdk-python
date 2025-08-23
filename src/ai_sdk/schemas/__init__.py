@@ -22,6 +22,13 @@ except ImportError:
     CerberusSchema = None
     cerberus_schema = None
 
+# Valibot-style support (always available)
+from .valibot import (
+    ValiSchema, StringSchema, NumberSchema, BooleanSchema, 
+    ObjectSchema, ArraySchema, ValiPythonSchema, ValiError,
+    string, number, boolean, object, array, valibot_schema
+)
+
 __all__ = [
     # Base interfaces
     "BaseSchema",
@@ -35,6 +42,22 @@ __all__ = [
     # JSONSchema support (always available)
     "JSONSchemaValidator", 
     "jsonschema_schema",
+    
+    # Valibot-style support (always available)
+    "ValiSchema",
+    "StringSchema",
+    "NumberSchema", 
+    "BooleanSchema",
+    "ObjectSchema",
+    "ArraySchema",
+    "ValiPythonSchema",
+    "ValiError",
+    "string",
+    "number",
+    "boolean",
+    "object", 
+    "array",
+    "valibot_schema",
     
     # Optional integrations
     "MarshmallowSchema",
