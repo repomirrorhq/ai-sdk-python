@@ -31,6 +31,15 @@ from .core.embed import embed, embed_many, EmbedResult, EmbedManyResult, Embeddi
 from .tools import Tool, ToolCall, ToolResult, tool, simple_tool, ToolRegistry
 from .tools import MCPClient, MCPClientConfig, create_mcp_client, StdioMCPTransport, StdioConfig, SSEMCPTransport, SSEConfig
 
+# Schema validation system
+from .schemas import (
+    BaseSchema, ValidationResult, SchemaValidationError,
+    PydanticSchema, pydantic_schema,
+    JSONSchemaValidator, jsonschema_schema,
+    MarshmallowSchema, marshmallow_schema,
+    CerberusSchema, cerberus_schema
+)
+
 # Agent system
 from .agent import Agent, AgentSettings
 
@@ -56,6 +65,12 @@ from .streaming import smooth_stream, ChunkDetector
 from .adapters import langchain_adapter, llamaindex_adapter
 from .adapters.langchain import to_ui_message_stream as langchain_to_ui_stream
 from .adapters.llamaindex import to_ui_message_stream as llamaindex_to_ui_stream
+
+# Framework Integrations
+from .integrations import (
+    fastapi_ai_middleware, AIFastAPI, streaming_chat_endpoint, websocket_chat_endpoint,
+    AIFlask, ai_blueprint, streaming_response_wrapper
+)
 
 # Testing utilities (for development and testing)
 from .testing import (
@@ -167,6 +182,18 @@ __all__ = [
     "StdioConfig",
     "SSEMCPTransport",
     "SSEConfig",
+    # Schema validation system
+    "BaseSchema",
+    "ValidationResult", 
+    "SchemaValidationError",
+    "PydanticSchema",
+    "pydantic_schema",
+    "JSONSchemaValidator",
+    "jsonschema_schema", 
+    "MarshmallowSchema",
+    "marshmallow_schema",
+    "CerberusSchema",
+    "cerberus_schema",
     # Agent system
     "Agent",
     "AgentSettings",
@@ -191,6 +218,14 @@ __all__ = [
     "llamaindex_adapter", 
     "langchain_to_ui_stream",
     "llamaindex_to_ui_stream",
+    # Framework Integrations
+    "fastapi_ai_middleware",
+    "AIFastAPI",
+    "streaming_chat_endpoint",
+    "websocket_chat_endpoint",
+    "AIFlask",
+    "ai_blueprint",
+    "streaming_response_wrapper",
     # Testing utilities
     "MockProvider",
     "MockLanguageModel",
