@@ -39,6 +39,7 @@ from .elevenlabs import ElevenLabsProvider, create_elevenlabs
 from .deepgram import DeepgramProvider, create_deepgram
 from .assemblyai import AssemblyAIProvider, create_assemblyai
 from .fal import FalProvider, create_fal
+from .hume import HumeProvider, create_hume
 
 __all__ = [
     "Provider",
@@ -92,4 +93,6 @@ __all__ = [
     "create_assemblyai",
     "FalProvider",
     "create_fal",
+    "HumeProvider",
+    "create_hume",
 ]
