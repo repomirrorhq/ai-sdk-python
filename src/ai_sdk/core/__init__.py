@@ -21,6 +21,18 @@ from .generate_image import (
     GenerateImageResult,
     NoImageGeneratedError,
 )
+from .generate_speech import (
+    generate_speech,
+    generate_speech_sync,
+    GenerateSpeechResult,
+    NoSpeechGeneratedError,
+)
+from .transcribe import (
+    transcribe,
+    transcribe_sync,
+    TranscriptionResult,
+    NoTranscriptGeneratedError,
+)
 
 __all__ = [
     "generate_text",
@@ -41,4 +53,12 @@ __all__ = [
     "generate_image_sync", 
     "GenerateImageResult",
     "NoImageGeneratedError",
+    "generate_speech",
+    "generate_speech_sync",
+    "GenerateSpeechResult", 
+    "NoSpeechGeneratedError",
+    "transcribe",
+    "transcribe_sync",
+    "TranscriptionResult",
+    "NoTranscriptGeneratedError",
 ]

@@ -295,6 +295,32 @@ class ImageModel(ABC):
         pass
 
 
+class SpeechGenerationWarning(dict):
+    """Warning from speech generation."""
+    pass
+
+
+class SpeechModelResponseMetadata(dict):
+    """Response metadata from speech model."""
+    pass
+
+
+class SpeechModelProviderMetadata(dict):
+    """Provider-specific metadata for speech models."""
+    pass
+
+
+class SpeechGenerationResult(dict):
+    """Result from speech generation."""
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.audio_data: bytes = kwargs.get('audio_data', b'')
+        self.warnings: List[SpeechGenerationWarning] = kwargs.get('warnings', [])
+        self.response: SpeechModelResponseMetadata = kwargs.get('response', {})
+        self.provider_metadata: SpeechModelProviderMetadata = kwargs.get('provider_metadata', {})
+
+
 class SpeechModel(ABC):
     """Base class for text-to-speech models."""
     
@@ -315,24 +341,71 @@ class SpeechModel(ABC):
         self.model_id = model_id
         self.config = kwargs
     
+    @property
+    def specification_version(self) -> str:
+        """Speech model interface version."""
+        return "v2"
+    
+    @property
+    def provider_name(self) -> str:
+        """Name of the provider."""
+        return self.provider.name
+    
     @abstractmethod
-    async def synthesize(
+    async def do_generate(
         self,
+        *,
         text: str,
         voice: Optional[str] = None,
-        **kwargs: Any,
-    ) -> bytes:
-        """Synthesize speech from text.
+        output_format: Optional[str] = None,
+        instructions: Optional[str] = None,
+        speed: Optional[float] = None,
+        language: Optional[str] = None,
+        provider_options: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> SpeechGenerationResult:
+        """Generate speech from text.
         
         Args:
             text: Text to synthesize
             voice: Voice identifier
-            **kwargs: Additional synthesis parameters
+            output_format: Output format (e.g. "mp3", "wav")
+            instructions: Instructions for speech generation
+            speed: Speech speed
+            language: Language for speech generation
+            provider_options: Provider-specific options
+            headers: Additional HTTP headers
             
         Returns:
-            Audio data
+            Speech generation result
         """
         pass
+
+
+class TranscriptionWarning(dict):
+    """Warning from transcription."""
+    pass
+
+
+class TranscriptionModelResponseMetadata(dict):
+    """Response metadata from transcription model."""
+    pass
+
+
+class TranscriptionModelProviderMetadata(dict):
+    """Provider-specific metadata for transcription models."""
+    pass
+
+
+class TranscriptionResult(dict):
+    """Result from transcription."""
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.text: str = kwargs.get('text', '')
+        self.warnings: List[TranscriptionWarning] = kwargs.get('warnings', [])
+        self.response: TranscriptionModelResponseMetadata = kwargs.get('response', {})
+        self.provider_metadata: TranscriptionModelProviderMetadata = kwargs.get('provider_metadata', {})
 
 
 class TranscriptionModel(ABC):
@@ -355,21 +428,40 @@ class TranscriptionModel(ABC):
         self.model_id = model_id
         self.config = kwargs
     
+    @property
+    def specification_version(self) -> str:
+        """Transcription model interface version."""
+        return "v2"
+    
+    @property
+    def provider_name(self) -> str:
+        """Name of the provider."""
+        return self.provider.name
+    
     @abstractmethod
-    async def transcribe(
+    async def do_transcribe(
         self,
+        *,
         audio_data: bytes,
         language: Optional[str] = None,
-        **kwargs: Any,
-    ) -> str:
+        prompt: Optional[str] = None,
+        temperature: Optional[float] = None,
+        timestamp_granularities: Optional[List[str]] = None,
+        provider_options: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> TranscriptionResult:
         """Transcribe audio to text.
         
         Args:
             audio_data: Audio data to transcribe
             language: Language code
-            **kwargs: Additional transcription parameters
+            prompt: Prompt to guide transcription
+            temperature: Sampling temperature
+            timestamp_granularities: Timestamp granularities
+            provider_options: Provider-specific options
+            headers: Additional HTTP headers
             
         Returns:
-            Transcribed text
+            Transcription result
         """
         pass

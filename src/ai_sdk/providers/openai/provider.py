@@ -5,10 +5,12 @@ from __future__ import annotations
 import os
 from typing import Any, Optional
 
-from ..base import EmbeddingModel, ImageModel, LanguageModel, Provider
+from ..base import EmbeddingModel, ImageModel, LanguageModel, Provider, SpeechModel, TranscriptionModel
 from .embedding_model import OpenAIEmbeddingModel
 from .image_model import OpenAIImageModel
 from .language_model import OpenAIChatLanguageModel
+from .speech_model import OpenAISpeechModel
+from .transcription_model import OpenAITranscriptionModel
 
 
 class OpenAIProvider(Provider):
@@ -119,3 +121,51 @@ class OpenAIProvider(Provider):
     def image(self, model_id: str = "dall-e-3", **kwargs: Any) -> ImageModel:
         """Alias for image_model() for compatibility."""
         return self.image_model(model_id=model_id, **kwargs)
+    
+    def speech_model(
+        self,
+        model_id: str = "tts-1",
+        **kwargs: Any,
+    ) -> SpeechModel:
+        """Get an OpenAI speech model.
+        
+        Args:
+            model_id: OpenAI speech model ID (e.g., "tts-1", "tts-1-hd")
+            **kwargs: Additional model configuration
+            
+        Returns:
+            OpenAI speech model instance
+        """
+        return OpenAISpeechModel(
+            provider=self,
+            model_id=model_id,
+            **kwargs,
+        )
+    
+    def speech(self, model_id: str = "tts-1", **kwargs: Any) -> SpeechModel:
+        """Alias for speech_model() for compatibility."""
+        return self.speech_model(model_id=model_id, **kwargs)
+    
+    def transcription_model(
+        self,
+        model_id: str = "whisper-1",
+        **kwargs: Any,
+    ) -> TranscriptionModel:
+        """Get an OpenAI transcription model.
+        
+        Args:
+            model_id: OpenAI transcription model ID (e.g., "whisper-1")
+            **kwargs: Additional model configuration
+            
+        Returns:
+            OpenAI transcription model instance
+        """
+        return OpenAITranscriptionModel(
+            provider=self,
+            model_id=model_id,
+            **kwargs,
+        )
+    
+    def transcription(self, model_id: str = "whisper-1", **kwargs: Any) -> TranscriptionModel:
+        """Alias for transcription_model() for compatibility."""
+        return self.transcription_model(model_id=model_id, **kwargs)
