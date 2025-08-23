@@ -91,7 +91,21 @@ class MistralLanguageModel(LanguageModel):
                     
         # Add response format if provided
         if response_format:
-            payload["response_format"] = response_format
+            # Check if we should use Mistral's json_schema format
+            if (response_format.get("type") == "json" and 
+                response_format.get("schema") is not None):
+                # Use Mistral's json_schema response format
+                payload["response_format"] = {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "schema": response_format["schema"],
+                        "strict": response_format.get("strict", False),
+                        "name": response_format.get("name", "response"),
+                        "description": response_format.get("description")
+                    }
+                }
+            else:
+                payload["response_format"] = response_format
             
         # Add Mistral-specific options
         if mistral_options.safe_prompt is not None:
@@ -219,7 +233,21 @@ class MistralLanguageModel(LanguageModel):
                     
         # Add response format if provided
         if response_format:
-            payload["response_format"] = response_format
+            # Check if we should use Mistral's json_schema format
+            if (response_format.get("type") == "json" and 
+                response_format.get("schema") is not None):
+                # Use Mistral's json_schema response format
+                payload["response_format"] = {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "schema": response_format["schema"],
+                        "strict": response_format.get("strict", False),
+                        "name": response_format.get("name", "response"),
+                        "description": response_format.get("description")
+                    }
+                }
+            else:
+                payload["response_format"] = response_format
             
         # Add Mistral-specific options
         if mistral_options.safe_prompt is not None:
