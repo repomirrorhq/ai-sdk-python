@@ -17,6 +17,8 @@ __version__ = "0.1.0"
 
 # Core functionality
 from .core.generate_text import generate_text, stream_text
+from .core.generate_text_enhanced import generate_text_enhanced, EnhancedGenerateTextResult
+from .core.step import StepResult, GeneratedFile, StopCondition, step_count_is, has_tool_call, PrepareStepFunction, PrepareStepResult, PrepareStepArgs
 from .core.generate_object import generate_object, stream_object, GenerateObjectResult, StreamObjectResult
 from .core.generate_image import generate_image, generate_image_sync, GenerateImageResult, NoImageGeneratedError
 from .core.generate_speech import generate_speech, generate_speech_sync, GenerateSpeechResult, NoSpeechGeneratedError
@@ -81,6 +83,16 @@ __all__ = [
     # Core functions
     "generate_text",
     "stream_text",
+    "generate_text_enhanced",
+    "EnhancedGenerateTextResult",
+    "StepResult",
+    "GeneratedFile", 
+    "StopCondition",
+    "step_count_is",
+    "has_tool_call",
+    "PrepareStepFunction",
+    "PrepareStepResult", 
+    "PrepareStepArgs",
     "generate_object", 
     "stream_object",
     "GenerateObjectResult",
