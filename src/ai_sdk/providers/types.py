@@ -37,6 +37,13 @@ class ProviderMetadata(BaseModel):
     data: Dict[str, Any] = Field(default_factory=dict)
 
 
+class ProviderSettings(BaseModel):
+    """Base settings for AI providers."""
+    
+    api_key: Optional[str] = Field(default=None, description="API key for the provider")
+    headers: Optional[Dict[str, str]] = Field(default=None, description="Additional HTTP headers")
+
+
 class TextContent(BaseModel):
     """Text content in a message."""
     
