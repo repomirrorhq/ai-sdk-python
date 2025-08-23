@@ -85,8 +85,14 @@ class MistralProvider(Provider):
     
     async def embedding_model(self, model_id: MistralEmbeddingModelId, **kwargs) -> EmbeddingModel:
         """Create a Mistral embedding model."""
-        # TODO: Implement Mistral embedding model
-        raise NotImplementedError("Mistral embedding models not yet implemented")
+        from .embedding_model import MistralEmbeddingModel
+        
+        return MistralEmbeddingModel(
+            model_id=model_id,
+            api_key=self.api_key,
+            base_url=self.base_url,
+            **kwargs
+        )
         
     async def close(self):
         """Close the HTTP client."""
