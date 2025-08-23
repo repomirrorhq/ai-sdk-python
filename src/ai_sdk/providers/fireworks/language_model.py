@@ -258,7 +258,8 @@ class FireworksLanguageModel(LanguageModel):
                             
                             try:
                                 data = json.loads(chunk)
-                                yield from self._process_chunk(data)
+                                async for result in self._process_chunk(data):
+                                    yield result
                             except json.JSONDecodeError:
                                 continue  # Skip invalid JSON chunks
         

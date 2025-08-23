@@ -248,7 +248,7 @@ def parse_tool_calls_from_content(
                         error=e
                     )
                     
-                    repaired_call = await repair_function(invalid_call)
+                    repaired_call = repair_function(invalid_call)
                     if repaired_call:
                         tool_call = repaired_call
                     else:
