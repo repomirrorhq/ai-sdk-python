@@ -128,10 +128,48 @@ class EmbeddingModel(ABC):
         self.provider = provider
         self.model_id = model_id
         self.config = kwargs
+        
+        # Model capabilities (can be overridden by subclasses)
+        self.max_embeddings_per_call: int = 1000
+        self.supports_parallel_calls: bool = True
+    
+    @property
+    def specification_version(self) -> str:
+        """Embedding model interface version."""
+        return "v2"
+    
+    @property 
+    def provider_name(self) -> str:
+        """Name of the provider."""
+        return self.provider.name
     
     @abstractmethod
+    async def do_embed(
+        self,
+        *,
+        values: List[Any],
+        headers: Optional[Dict[str, str]] = None,
+        extra_body: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Generate embeddings for multiple values (modern interface).
+        
+        Args:
+            values: List of values to embed
+            headers: Additional HTTP headers
+            extra_body: Additional request body parameters
+            
+        Returns:
+            Dictionary containing:
+            - embeddings: List[List[float]] - Generated embeddings
+            - usage: Dict with 'tokens' count
+            - provider_metadata: Optional provider-specific metadata
+            - response: Optional raw response data
+        """
+        pass
+    
+    # Legacy interface for backwards compatibility
     async def embed(self, input_text: str) -> List[float]:
-        """Generate embeddings for a single text.
+        """Generate embeddings for a single text (legacy interface).
         
         Args:
             input_text: Text to embed
@@ -139,11 +177,11 @@ class EmbeddingModel(ABC):
         Returns:
             Embedding vector
         """
-        pass
+        result = await self.do_embed(values=[input_text])
+        return result['embeddings'][0]
     
-    @abstractmethod
     async def embed_many(self, inputs: List[str]) -> List[List[float]]:
-        """Generate embeddings for multiple texts.
+        """Generate embeddings for multiple texts (legacy interface).
         
         Args:
             inputs: List of texts to embed
@@ -151,7 +189,8 @@ class EmbeddingModel(ABC):
         Returns:
             List of embedding vectors
         """
-        pass
+        result = await self.do_embed(values=inputs)
+        return result['embeddings']
 
 
 class ImageModel(ABC):

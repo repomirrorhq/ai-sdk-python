@@ -5,7 +5,8 @@ from __future__ import annotations
 import os
 from typing import Any, Optional
 
-from ..base import LanguageModel, Provider
+from ..base import EmbeddingModel, LanguageModel, Provider
+from .embedding_model import OpenAIEmbeddingModel
 from .language_model import OpenAIChatLanguageModel
 
 
@@ -68,3 +69,28 @@ class OpenAIProvider(Provider):
     def chat(self, model_id: str = "gpt-3.5-turbo", **kwargs: Any) -> LanguageModel:
         """Alias for language_model() for compatibility."""
         return self.language_model(model_id=model_id, **kwargs)
+    
+    def embedding_model(
+        self,
+        model_id: str = "text-embedding-3-small",
+        **kwargs: Any,
+    ) -> EmbeddingModel:
+        """Get an OpenAI embedding model.
+        
+        Args:
+            model_id: OpenAI embedding model ID 
+                     (e.g., "text-embedding-3-small", "text-embedding-3-large", "text-embedding-ada-002")
+            **kwargs: Additional model configuration
+            
+        Returns:
+            OpenAI embedding model instance
+        """
+        return OpenAIEmbeddingModel(
+            provider=self,
+            model_id=model_id,
+            **kwargs,
+        )
+    
+    def embedding(self, model_id: str = "text-embedding-3-small", **kwargs: Any) -> EmbeddingModel:
+        """Alias for embedding_model() for compatibility."""
+        return self.embedding_model(model_id=model_id, **kwargs)
