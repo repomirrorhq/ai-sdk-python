@@ -15,16 +15,31 @@ Key features:
 
 __version__ = "0.1.0"
 
-# Core functionality (will be implemented in phases)
-# from .core.generate_text import generate_text, stream_text
-# from .core.generate_object import generate_object, stream_object
-# from .core.embed import embed, embed_many
-# from .core.tools import tool, dynamic_tool
-# from .schemas import json_schema, pydantic_schema
-# from .providers import openai, anthropic, google, azure
-# from .errors import AISDKError
+# Core functionality
+from .core.generate_text import generate_text, stream_text
 
-# For now, export version and basic info
+# Provider interfaces
+from .providers.base import Provider, LanguageModel, EmbeddingModel
+from .providers.types import Message, Content, FinishReason
+
+# Errors
+from .errors import AISDKError, APIError, InvalidArgumentError
+
+# For now, export implemented functionality
 __all__ = [
     "__version__",
+    # Core functions
+    "generate_text",
+    "stream_text",
+    # Provider interfaces  
+    "Provider",
+    "LanguageModel", 
+    "EmbeddingModel",
+    "Message",
+    "Content",
+    "FinishReason",
+    # Errors
+    "AISDKError",
+    "APIError", 
+    "InvalidArgumentError",
 ]
