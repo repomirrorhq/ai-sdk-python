@@ -48,6 +48,9 @@ from .middleware import (
     simulate_streaming_middleware,
 )
 
+# Streaming utilities
+from .streaming import smooth_stream, ChunkDetector
+
 # Provider interfaces
 from .providers.base import Provider, LanguageModel, EmbeddingModel, ImageModel, SpeechModel, TranscriptionModel
 from .providers.types import Message, Content, FinishReason
@@ -152,6 +155,9 @@ __all__ = [
     "telemetry_middleware",
     "extract_reasoning_middleware",
     "simulate_streaming_middleware",
+    # Streaming utilities
+    "smooth_stream",
+    "ChunkDetector",
     # Provider interfaces  
     "Provider",
     "LanguageModel", 
