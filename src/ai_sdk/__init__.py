@@ -62,6 +62,7 @@ from .providers.xai import XAIProvider as create_xai
 from .providers.perplexity import create_perplexity_provider as create_perplexity
 from .providers.deepseek import create_deepseek_provider as create_deepseek
 from .providers.cerebras import create_cerebras_provider as create_cerebras
+from .providers.fireworks import create_fireworks_provider as create_fireworks
 
 # Errors
 from .errors import AISDKError, APIError, InvalidArgumentError
@@ -141,6 +142,7 @@ __all__ = [
     "create_perplexity",
     "create_deepseek",
     "create_cerebras",
+    "create_fireworks",
     # Errors
     "AISDKError",
     "APIError", 
