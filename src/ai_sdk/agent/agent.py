@@ -4,14 +4,63 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Union, TypeVar, Generic, Callable, Awaitable
 from pydantic import BaseModel, Field
+from abc import ABC, abstractmethod
+import asyncio
+import logging
 
 from ..providers.base import LanguageModel
 from ..providers.types import Message, ToolDefinition, ProviderMetadata
 from ..core.generate_text import generate_text, stream_text, GenerateTextResult, StreamTextResult
 from ..tools import Tool, ToolRegistry
+from ..errors.base import AISDKError
 
 # Type variable for tools
 TOOLS = TypeVar('TOOLS')
+
+
+class StepResult(BaseModel):
+    """Result of a single agent step."""
+    
+    step_number: int = Field(description="The step number")
+    messages: List[Message] = Field(description="Messages generated in this step")
+    result: Optional[GenerateTextResult] = Field(None, description="Generation result")
+    tool_calls: List[Any] = Field(default_factory=list, description="Tool calls made in this step")
+    tool_results: List[Any] = Field(default_factory=list, description="Tool results from this step")
+    
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class PrepareStepResult(BaseModel):
+    """Result from a prepare step function."""
+    
+    model: Optional[LanguageModel] = Field(None, description="Override model for this step")
+    tool_choice: Optional[Union[str, Dict[str, Any]]] = Field(None, description="Override tool choice")
+    active_tools: Optional[List[str]] = Field(None, description="Limit tools to these names")
+    system: Optional[str] = Field(None, description="Override system message")
+    messages: Optional[List[Message]] = Field(None, description="Override messages")
+    
+    class Config:
+        arbitrary_types_allowed = True
+
+
+# Type alias for prepare step function
+PrepareStepFunction = Callable[
+    [Dict[str, Any]],  # Context with steps, step_number, model, messages
+    Union[PrepareStepResult, None, Awaitable[Union[PrepareStepResult, None]]]
+]
+
+# Type alias for tool call repair function
+ToolCallRepairFunction = Callable[
+    [Dict[str, Any]],  # Context with toolCall, tools, error, etc.
+    Awaitable[Optional[Dict[str, Any]]]  # Returns repaired tool call or None
+]
+
+# Type alias for step finish callback
+OnStepFinishCallback = Callable[
+    [StepResult],  # Step result
+    Union[None, Awaitable[None]]
+]
 
 
 class StopCondition:
@@ -77,6 +126,28 @@ class AgentSettings(BaseModel):
     max_steps: int = Field(10, description="Maximum number of steps the agent can take")
     context: Any = Field(None, description="Shared context for tool executions")
     
+    # Advanced agent settings
+    active_tools: Optional[List[str]] = Field(
+        None, 
+        description="Limit tools to these names without changing types"
+    )
+    prepare_step: Optional[PrepareStepFunction] = Field(
+        None,
+        description="Function to provide different settings for each step"
+    )
+    tool_call_repair: Optional[ToolCallRepairFunction] = Field(
+        None,
+        description="Function to repair failed tool calls"
+    )
+    on_step_finish: Optional[OnStepFinishCallback] = Field(
+        None,
+        description="Callback called when each step finishes"
+    )
+    experimental_context: Any = Field(
+        None,
+        description="Experimental context passed to tool calls"
+    )
+    
     class Config:
         arbitrary_types_allowed = True
 
@@ -117,13 +188,14 @@ class Agent:
         """
         self.settings = AgentSettings(**settings)
         self._tool_registry = ToolRegistry()
+        self._logger = logging.getLogger("ai_sdk.agent")
         
         # Register tools if provided
         if self.settings.tools:
             for name, tool in self.settings.tools.items():
                 self._tool_registry.register(name, tool)
     
-    async def generate(
+    async def multi_step_generate(
         self,
         prompt: Optional[str] = None,
         *,
@@ -131,12 +203,12 @@ class Agent:
         provider_metadata: Optional[ProviderMetadata] = None,
         provider_options: Optional[Dict[str, Any]] = None,
         **kwargs: Any
-    ) -> GenerateTextResult:
-        """Generate a response from the agent.
+    ) -> Dict[str, Any]:
+        """Generate a response using multi-step reasoning.
         
-        This method combines the agent's settings with the provided prompt/messages
-        and executes the generation process, potentially involving multiple steps
-        with tool calls.
+        This method implements the full agent loop with tool execution,
+        step preparation, and stop conditions. It performs multiple
+        generation steps until a stop condition is met.
         
         Args:
             prompt: Text prompt (alternative to messages)
@@ -146,8 +218,308 @@ class Agent:
             **kwargs: Additional generation parameters
             
         Returns:
+            Dict containing final result, steps, and metadata
+        """
+        # Initialize conversation
+        if messages:
+            conversation = list(messages)
+        elif prompt:
+            conversation = [Message(role="user", content=prompt)]
+        else:
+            raise ValueError("Either 'prompt' or 'messages' must be provided")
+        
+        # Add system message if configured
+        if self.settings.system:
+            conversation.insert(0, Message(role="system", content=self.settings.system))
+        
+        steps: List[StepResult] = []
+        step_number = 0
+        
+        while step_number < self.settings.max_steps:
+            self._logger.debug(f"Starting step {step_number}")
+            
+            # Prepare step settings
+            step_settings = await self._prepare_step(
+                steps=steps,
+                step_number=step_number,
+                messages=conversation,
+                **kwargs
+            )
+            
+            # Execute generation step
+            try:
+                result = await self._execute_step(
+                    messages=conversation,
+                    step_settings=step_settings,
+                    provider_metadata=provider_metadata,
+                    provider_options=provider_options,
+                    **kwargs
+                )
+                
+                # Create step result
+                step_result = StepResult(
+                    step_number=step_number,
+                    messages=conversation.copy(),
+                    result=result,
+                    tool_calls=getattr(result, 'tool_calls', []),
+                    tool_results=getattr(result, 'tool_results', [])
+                )
+                
+                steps.append(step_result)
+                
+                # Call step finish callback
+                if self.settings.on_step_finish:
+                    try:
+                        callback_result = self.settings.on_step_finish(step_result)
+                        if asyncio.iscoroutine(callback_result):
+                            await callback_result
+                    except Exception as e:
+                        self._logger.warning(f"Step finish callback failed: {e}")
+                
+                # Check stop conditions
+                if self._should_stop(step_number, conversation):
+                    break
+                
+                # Execute tools if present
+                if hasattr(result, 'tool_calls') and result.tool_calls:
+                    await self._execute_tools(result.tool_calls, conversation)
+                
+                step_number += 1
+                
+            except Exception as e:
+                self._logger.error(f"Step {step_number} failed: {e}")
+                break
+        
+        return {
+            "final_result": steps[-1].result if steps else None,
+            "steps": steps,
+            "conversation": conversation,
+            "total_steps": len(steps)
+        }
+    
+    async def _prepare_step(
+        self,
+        steps: List[StepResult],
+        step_number: int,
+        messages: List[Message],
+        **kwargs: Any
+    ) -> Dict[str, Any]:
+        """Prepare settings for a specific step."""
+        base_settings = {
+            "model": self.settings.model,
+            "max_tokens": self.settings.max_tokens,
+            "temperature": self.settings.temperature,
+            "top_p": self.settings.top_p,
+            "top_k": self.settings.top_k,
+            "frequency_penalty": self.settings.frequency_penalty,
+            "presence_penalty": self.settings.presence_penalty,
+            "stop": self.settings.stop,
+            "seed": self.settings.seed,
+            "max_retries": self.settings.max_retries,
+            "headers": self.settings.headers,
+            "extra_body": self.settings.extra_body,
+            **kwargs
+        }
+        
+        # Apply prepare step function if provided
+        if self.settings.prepare_step:
+            try:
+                context = {
+                    "steps": steps,
+                    "step_number": step_number,
+                    "model": self.settings.model,
+                    "messages": messages
+                }
+                
+                step_override = self.settings.prepare_step(context)
+                if asyncio.iscoroutine(step_override):
+                    step_override = await step_override
+                
+                if step_override:
+                    if step_override.model:
+                        base_settings["model"] = step_override.model
+                    if step_override.tool_choice is not None:
+                        base_settings["tool_choice"] = step_override.tool_choice
+                    if step_override.system:
+                        base_settings["system"] = step_override.system
+                    if step_override.messages:
+                        messages[:] = step_override.messages
+                    
+                    # Handle active_tools filtering
+                    if step_override.active_tools and self.settings.tools:
+                        filtered_tools = {
+                            name: tool for name, tool in self.settings.tools.items()
+                            if name in step_override.active_tools
+                        }
+                        base_settings["active_tools"] = filtered_tools
+                        
+            except Exception as e:
+                self._logger.warning(f"Prepare step function failed: {e}")
+        
+        return base_settings
+    
+    async def _execute_step(
+        self,
+        messages: List[Message],
+        step_settings: Dict[str, Any],
+        provider_metadata: Optional[ProviderMetadata] = None,
+        provider_options: Optional[Dict[str, Any]] = None,
+        **kwargs: Any
+    ) -> GenerateTextResult:
+        """Execute a single generation step."""
+        generation_options = {
+            **step_settings,
+            "messages": messages
+        }
+        
+        # Add tools if available
+        tools_to_use = step_settings.get("active_tools", self.settings.tools)
+        if tools_to_use:
+            tool_definitions = []
+            for name, tool in tools_to_use.items():
+                tool_definitions.append(ToolDefinition(
+                    name=name,
+                    description=tool.description,
+                    parameters=tool.parameters
+                ))
+            generation_options["tools"] = tool_definitions
+            generation_options["tool_choice"] = step_settings.get("tool_choice", self.settings.tool_choice)
+        
+        # Add provider options
+        if provider_metadata:
+            generation_options["provider_metadata"] = provider_metadata
+        if provider_options:
+            generation_options["provider_options"] = provider_options
+        
+        return await generate_text(**generation_options)
+    
+    async def _execute_tools(self, tool_calls: List[Any], conversation: List[Message]) -> None:
+        """Execute tool calls and add results to conversation."""
+        for tool_call in tool_calls:
+            try:
+                # Get the tool
+                tool_name = tool_call.get("name") or tool_call.get("function", {}).get("name")
+                if not tool_name or not self.settings.tools or tool_name not in self.settings.tools:
+                    continue
+                
+                tool = self.settings.tools[tool_name]
+                args = tool_call.get("arguments") or tool_call.get("function", {}).get("arguments", {})
+                
+                # Execute tool with context
+                if self.settings.experimental_context:
+                    result = await tool.execute(args, context=self.settings.experimental_context)
+                else:
+                    result = await tool.execute(args)
+                
+                # Add tool result to conversation
+                conversation.append(Message(
+                    role="tool",
+                    content=str(result),
+                    tool_call_id=tool_call.get("id")
+                ))
+                
+            except Exception as e:
+                self._logger.error(f"Tool execution failed for {tool_name}: {e}")
+                
+                # Try tool repair if configured
+                if self.settings.tool_call_repair:
+                    try:
+                        repair_context = {
+                            "toolCall": tool_call,
+                            "tools": self.settings.tools,
+                            "error": e,
+                            "system": self.settings.system,
+                            "messages": conversation
+                        }
+                        
+                        repaired_call = await self.settings.tool_call_repair(repair_context)
+                        if repaired_call:
+                            # Retry with repaired call
+                            await self._execute_tools([repaired_call], conversation)
+                            continue
+                    except Exception as repair_error:
+                        self._logger.error(f"Tool repair failed: {repair_error}")
+                
+                # Add error result to conversation
+                conversation.append(Message(
+                    role="tool",
+                    content=f"Error: {str(e)}",
+                    tool_call_id=tool_call.get("id")
+                ))
+    
+    def _should_stop(self, step_number: int, messages: List[Message]) -> bool:
+        """Check if any stop condition is met."""
+        stop_conditions = self.settings.stop_when
+        if not isinstance(stop_conditions, list):
+            stop_conditions = [stop_conditions]
+        
+        for condition in stop_conditions:
+            if condition(step_number + 1, messages):
+                return True
+        
+        return False
+    
+    async def generate(
+        self,
+        prompt: Optional[str] = None,
+        *,
+        messages: Optional[List[Message]] = None,
+        provider_metadata: Optional[ProviderMetadata] = None,
+        provider_options: Optional[Dict[str, Any]] = None,
+        use_multi_step: bool = True,
+        **kwargs: Any
+    ) -> GenerateTextResult:
+        """Generate a response from the agent.
+        
+        This method can use either simple generation or multi-step reasoning
+        depending on the agent configuration and use_multi_step parameter.
+        
+        Args:
+            prompt: Text prompt (alternative to messages)
+            messages: List of messages for conversation
+            provider_metadata: Provider-specific metadata
+            provider_options: Provider-specific options
+            use_multi_step: Whether to use multi-step reasoning (default: True)
+            **kwargs: Additional generation parameters
+            
+        Returns:
             Result containing the agent's response and metadata
         """
+        # Use multi-step generation if enabled and tools are available
+        if (use_multi_step and 
+            (self.settings.tools or 
+             self.settings.prepare_step or
+             self.settings.tool_call_repair or
+             self.settings.max_steps > 1)):
+            
+            result = await self.multi_step_generate(
+                prompt=prompt,
+                messages=messages,
+                provider_metadata=provider_metadata,
+                provider_options=provider_options,
+                **kwargs
+            )
+            return result["final_result"]
+        
+        # Fall back to simple generation
+        return await self._simple_generate(
+            prompt=prompt,
+            messages=messages,
+            provider_metadata=provider_metadata,
+            provider_options=provider_options,
+            **kwargs
+        )
+    
+    async def _simple_generate(
+        self,
+        prompt: Optional[str] = None,
+        *,
+        messages: Optional[List[Message]] = None,
+        provider_metadata: Optional[ProviderMetadata] = None,
+        provider_options: Optional[Dict[str, Any]] = None,
+        **kwargs: Any
+    ) -> GenerateTextResult:
+        """Simple single-step generation without multi-step reasoning."""
         # Build the full options by combining agent settings and call-specific options
         generation_options = {
             "model": self.settings.model,
@@ -172,10 +544,18 @@ class Agent:
             elif prompt:
                 generation_options["system"] = self.settings.system
         
+        # Filter tools if active_tools is set
+        tools_to_use = self.settings.tools
+        if self.settings.active_tools and self.settings.tools:
+            tools_to_use = {
+                name: tool for name, tool in self.settings.tools.items()
+                if name in self.settings.active_tools
+            }
+        
         # Add tools if available
-        if self.settings.tools:
+        if tools_to_use:
             tool_definitions = []
-            for name, tool in self.settings.tools.items():
+            for name, tool in tools_to_use.items():
                 tool_definitions.append(ToolDefinition(
                     name=name,
                     description=tool.description,
