@@ -169,3 +169,32 @@ class OpenAIProvider(Provider):
     def transcription(self, model_id: str = "whisper-1", **kwargs: Any) -> TranscriptionModel:
         """Alias for transcription_model() for compatibility."""
         return self.transcription_model(model_id=model_id, **kwargs)
+
+
+def create_openai(
+    api_key: Optional[str] = None,
+    base_url: Optional[str] = None,
+    organization: Optional[str] = None,
+    **kwargs: Any,
+) -> OpenAIProvider:
+    """Create an OpenAI provider instance.
+    
+    Args:
+        api_key: OpenAI API key (defaults to OPENAI_API_KEY env var)
+        base_url: Base URL for API requests (defaults to OpenAI's API)
+        organization: OpenAI organization ID
+        **kwargs: Additional configuration options
+        
+    Returns:
+        OpenAI provider instance
+    """
+    return OpenAIProvider(
+        api_key=api_key,
+        base_url=base_url,
+        organization=organization,
+        **kwargs,
+    )
+
+
+# Default provider instance  
+openai = create_openai()

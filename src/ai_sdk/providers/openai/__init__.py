@@ -1,6 +1,6 @@
 """OpenAI provider for AI SDK Python."""
 
-from .provider import OpenAIProvider
+from .provider import OpenAIProvider, create_openai
 from .language_model import OpenAIChatLanguageModel
 from .embedding_model import OpenAIEmbeddingModel
 from .image_model import OpenAIImageModel
@@ -14,6 +14,7 @@ from .reasoning_models import (
 
 __all__ = [
     "OpenAIProvider", 
+    "create_openai",
     "OpenAIChatLanguageModel",
     "OpenAIEmbeddingModel",
     "OpenAIImageModel",
