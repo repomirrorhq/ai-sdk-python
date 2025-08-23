@@ -26,6 +26,9 @@ from .core.embed import embed, embed_many, EmbedResult, EmbedManyResult, Embeddi
 # Tools
 from .tools import Tool, ToolCall, ToolResult, tool, simple_tool, ToolRegistry
 
+# Agent system
+from .agent import Agent, AgentSettings
+
 # Middleware
 from .middleware import (
     wrap_language_model,
@@ -86,6 +89,9 @@ __all__ = [
     "tool",
     "simple_tool",
     "ToolRegistry",
+    # Agent system
+    "Agent",
+    "AgentSettings",
     # Middleware
     "wrap_language_model",
     "LanguageModelMiddleware",
