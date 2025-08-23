@@ -106,7 +106,8 @@ class AgentSettings(BaseModel):
     system: Optional[str] = Field(None, description="System message for the agent")
     tools: Optional[Dict[str, Tool]] = Field(None, description="Available tools for the agent")
     tool_choice: Optional[Union[str, Dict[str, Any]]] = Field("auto", description="Tool choice strategy")
-    max_tokens: Optional[int] = Field(None, description="Maximum tokens to generate")
+    max_output_tokens: Optional[int] = Field(None, description="Maximum tokens to generate (preferred)")
+    max_tokens: Optional[int] = Field(None, description="Maximum tokens to generate (deprecated, use max_output_tokens)")
     temperature: Optional[float] = Field(None, description="Temperature for generation")
     top_p: Optional[float] = Field(None, description="Top-p for nucleus sampling") 
     top_k: Optional[int] = Field(None, description="Top-k for top-k sampling")
@@ -147,6 +148,13 @@ class AgentSettings(BaseModel):
         None,
         description="Experimental context passed to tool calls"
     )
+    
+    @property
+    def resolved_max_tokens(self) -> Optional[int]:
+        """Resolve max_tokens parameter, preferring max_output_tokens."""
+        if self.max_output_tokens is not None and self.max_tokens is not None:
+            raise ValueError("Cannot specify both max_output_tokens and max_tokens. Use max_output_tokens (preferred).")
+        return self.max_output_tokens if self.max_output_tokens is not None else self.max_tokens
     
     class Config:
         arbitrary_types_allowed = True
@@ -307,7 +315,7 @@ class Agent:
         """Prepare settings for a specific step."""
         base_settings = {
             "model": self.settings.model,
-            "max_tokens": self.settings.max_tokens,
+            "max_output_tokens": self.settings.resolved_max_tokens,
             "temperature": self.settings.temperature,
             "top_p": self.settings.top_p,
             "top_k": self.settings.top_k,
@@ -523,7 +531,7 @@ class Agent:
         # Build the full options by combining agent settings and call-specific options
         generation_options = {
             "model": self.settings.model,
-            "max_tokens": self.settings.max_tokens,
+            "max_output_tokens": self.settings.resolved_max_tokens,
             "temperature": self.settings.temperature,
             "top_p": self.settings.top_p,
             "top_k": self.settings.top_k,
@@ -607,7 +615,7 @@ class Agent:
         # Build the full options (same logic as generate)
         generation_options = {
             "model": self.settings.model,
-            "max_tokens": self.settings.max_tokens,
+            "max_output_tokens": self.settings.resolved_max_tokens,
             "temperature": self.settings.temperature,
             "top_p": self.settings.top_p,
             "top_k": self.settings.top_k,

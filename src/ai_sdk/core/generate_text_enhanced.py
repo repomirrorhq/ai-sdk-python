@@ -171,7 +171,8 @@ async def generate_text_enhanced(
     system: Optional[str] = None,
     prompt: Optional[str] = None,
     messages: Optional[List[Message]] = None,
-    max_tokens: Optional[int] = None,
+    max_output_tokens: Optional[int] = None,
+    max_tokens: Optional[int] = None,  # Deprecated, use max_output_tokens
     temperature: Optional[float] = None,
     top_p: Optional[float] = None,
     top_k: Optional[int] = None,
@@ -247,6 +248,12 @@ async def generate_text_enhanced(
     elif messages:
         initial_messages.extend(messages)
     
+    # Handle parameter compatibility between max_tokens and max_output_tokens
+    if max_output_tokens is not None and max_tokens is not None:
+        raise ValueError("Cannot specify both max_output_tokens and max_tokens. Use max_output_tokens (preferred).")
+    
+    resolved_max_tokens = max_output_tokens if max_output_tokens is not None else max_tokens
+    
     # Convert stop_when to list if needed
     stop_conditions = stop_when if isinstance(stop_when, list) else [stop_when]
     
@@ -302,7 +309,7 @@ async def generate_text_enhanced(
         # Build provider options
         provider_options = GenerateOptions(
             messages=step_messages,
-            max_tokens=step_config.max_tokens if step_config and step_config.max_tokens else max_tokens,
+            max_tokens=step_config.max_tokens if step_config and step_config.max_tokens else resolved_max_tokens,
             temperature=step_config.temperature if step_config and step_config.temperature else temperature,
             top_p=step_config.top_p if step_config and step_config.top_p else top_p,
             top_k=step_config.top_k if step_config and step_config.top_k else top_k,
