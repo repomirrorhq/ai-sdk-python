@@ -26,6 +26,16 @@ from .core.embed import embed, embed_many, EmbedResult, EmbedManyResult, Embeddi
 # Tools
 from .tools import Tool, ToolCall, ToolResult, tool, simple_tool, ToolRegistry
 
+# Middleware
+from .middleware import (
+    wrap_language_model,
+    LanguageModelMiddleware, 
+    logging_middleware,
+    caching_middleware,
+    default_settings_middleware,
+    telemetry_middleware,
+)
+
 # Provider interfaces
 from .providers.base import Provider, LanguageModel, EmbeddingModel, ImageModel, SpeechModel, TranscriptionModel
 from .providers.types import Message, Content, FinishReason
@@ -76,6 +86,13 @@ __all__ = [
     "tool",
     "simple_tool",
     "ToolRegistry",
+    # Middleware
+    "wrap_language_model",
+    "LanguageModelMiddleware",
+    "logging_middleware", 
+    "caching_middleware",
+    "default_settings_middleware",
+    "telemetry_middleware",
     # Provider interfaces  
     "Provider",
     "LanguageModel", 
