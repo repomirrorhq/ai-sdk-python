@@ -10,6 +10,7 @@ language models to connect to external tool servers and use their capabilities.
 from .mcp_client import MCPClient, MCPClientConfig
 from .mcp_transport import MCPTransport
 from .stdio_transport import StdioMCPTransport, StdioConfig
+from .sse_transport import SSEMCPTransport, SSEConfig
 from .types import (
     MCPTool,
     CallToolResult,
@@ -37,6 +38,8 @@ __all__ = [
     "MCPTransport",
     "StdioMCPTransport",
     "StdioConfig",
+    "SSEMCPTransport",
+    "SSEConfig",
     # Types
     "MCPTool",
     "CallToolResult",
