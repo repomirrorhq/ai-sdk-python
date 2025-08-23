@@ -57,6 +57,10 @@ from .providers.groq import create_groq
 from .providers.together import create_together
 from .providers.bedrock import create_bedrock
 from .providers.mistral import create_mistral
+from .providers.cohere import create_cohere_provider as create_cohere
+from .providers.xai import XAIProvider as create_xai
+from .providers.perplexity import create_perplexity_provider as create_perplexity
+from .providers.deepseek import create_deepseek_provider as create_deepseek
 
 # Errors
 from .errors import AISDKError, APIError, InvalidArgumentError
@@ -131,6 +135,10 @@ __all__ = [
     "create_together",
     "create_bedrock",
     "create_mistral",
+    "create_cohere",
+    "create_xai",
+    "create_perplexity",
+    "create_deepseek",
     # Errors
     "AISDKError",
     "APIError", 
