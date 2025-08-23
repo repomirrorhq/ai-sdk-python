@@ -76,6 +76,12 @@ from .providers.fal import create_fal
 from .providers.hume import create_hume
 from .providers.lmnt import create_lmnt
 from .providers.revai import create_revai
+from .providers.deepinfra import create_deepinfra_provider as create_deepinfra
+from .providers.gateway import create_gateway_provider as create_gateway
+from .providers.gladia import create_gladia_provider as create_gladia
+from .providers.luma import create_luma_provider as create_luma
+from .providers.openai_compatible import create_openai_compatible
+from .providers.vercel import create_vercel_provider as create_vercel
 
 # Errors
 from .errors import AISDKError, APIError, InvalidArgumentError
@@ -180,6 +186,12 @@ __all__ = [
     "create_hume",
     "create_lmnt",
     "create_revai",
+    "create_deepinfra",
+    "create_gateway",
+    "create_gladia",
+    "create_luma",
+    "create_openai_compatible",
+    "create_vercel",
     # Errors
     "AISDKError",
     "APIError", 
