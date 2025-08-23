@@ -32,6 +32,7 @@ from .mistral import MistralProvider, create_mistral
 from .cohere import CohereProvider, create_cohere_provider
 from .perplexity import PerplexityProvider, create_perplexity_provider
 from .deepseek import DeepSeekProvider, create_deepseek_provider
+from .xai import XAIProvider
 
 __all__ = [
     "Provider",
@@ -72,4 +73,5 @@ __all__ = [
     "create_perplexity_provider",
     "DeepSeekProvider",
     "create_deepseek_provider",
+    "XAIProvider",
 ]
