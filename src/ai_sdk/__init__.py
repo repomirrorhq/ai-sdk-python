@@ -20,6 +20,8 @@ from .core.generate_text import generate_text, stream_text
 from .core.generate_text_enhanced import generate_text_enhanced, EnhancedGenerateTextResult
 from .core.step import StepResult, GeneratedFile, StopCondition, step_count_is, has_tool_call, PrepareStepFunction, PrepareStepResult, PrepareStepArgs
 from .core.generate_object import generate_object, stream_object, GenerateObjectResult, StreamObjectResult
+from .core.generate_object_enhanced import generate_object_enhanced, EnhancedGenerateObjectResult
+from .core.object_repair import TextRepairFunction, create_default_repair_function, create_custom_repair_function
 from .core.generate_image import generate_image, generate_image_sync, GenerateImageResult, NoImageGeneratedError
 from .core.generate_speech import generate_speech, generate_speech_sync, GenerateSpeechResult, NoSpeechGeneratedError
 from .core.transcribe import transcribe, transcribe_sync, TranscriptionResult, NoTranscriptGeneratedError
@@ -97,6 +99,11 @@ __all__ = [
     "stream_object",
     "GenerateObjectResult",
     "StreamObjectResult",
+    "generate_object_enhanced",
+    "EnhancedGenerateObjectResult",
+    "TextRepairFunction",
+    "create_default_repair_function",
+    "create_custom_repair_function",
     "generate_image",
     "generate_image_sync",
     "GenerateImageResult",
