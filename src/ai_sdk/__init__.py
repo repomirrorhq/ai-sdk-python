@@ -29,6 +29,9 @@ from .tools import Tool, ToolCall, ToolResult, tool, simple_tool, ToolRegistry
 # Agent system
 from .agent import Agent, AgentSettings
 
+# Registry system
+from .registry import create_provider_registry, ProviderRegistry, custom_provider
+
 # Middleware
 from .middleware import (
     wrap_language_model,
@@ -92,6 +95,10 @@ __all__ = [
     # Agent system
     "Agent",
     "AgentSettings",
+    # Registry system
+    "create_provider_registry",
+    "ProviderRegistry",
+    "custom_provider",
     # Middleware
     "wrap_language_model",
     "LanguageModelMiddleware",
