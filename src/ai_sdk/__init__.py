@@ -19,13 +19,15 @@ __version__ = "0.1.0"
 from .core.generate_text import generate_text, stream_text
 from .core.generate_object import generate_object, stream_object, GenerateObjectResult, StreamObjectResult
 from .core.generate_image import generate_image, generate_image_sync, GenerateImageResult, NoImageGeneratedError
+from .core.generate_speech import generate_speech, generate_speech_sync, GenerateSpeechResult, NoSpeechGeneratedError
+from .core.transcribe import transcribe, transcribe_sync, TranscriptionResult, NoTranscriptGeneratedError
 from .core.embed import embed, embed_many, EmbedResult, EmbedManyResult, EmbeddingUsage, cosine_similarity
 
 # Tools
 from .tools import Tool, ToolCall, ToolResult, tool, simple_tool, ToolRegistry
 
 # Provider interfaces
-from .providers.base import Provider, LanguageModel, EmbeddingModel, ImageModel
+from .providers.base import Provider, LanguageModel, EmbeddingModel, ImageModel, SpeechModel, TranscriptionModel
 from .providers.types import Message, Content, FinishReason
 
 # Providers
@@ -53,6 +55,14 @@ __all__ = [
     "generate_image_sync",
     "GenerateImageResult",
     "NoImageGeneratedError",
+    "generate_speech",
+    "generate_speech_sync",
+    "GenerateSpeechResult",
+    "NoSpeechGeneratedError",
+    "transcribe",
+    "transcribe_sync",
+    "TranscriptionResult", 
+    "NoTranscriptGeneratedError",
     "embed",
     "embed_many",
     "EmbedResult",
@@ -71,6 +81,8 @@ __all__ = [
     "LanguageModel", 
     "EmbeddingModel",
     "ImageModel",
+    "SpeechModel",
+    "TranscriptionModel",
     "Message",
     "Content",
     "FinishReason",
