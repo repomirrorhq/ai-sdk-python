@@ -49,10 +49,11 @@ dependencies = [
 openai = ["openai>=1.0.0"]
 anthropic = ["anthropic>=0.21.0"]
 google = ["google-generativeai>=0.7.0"]
+google-vertex = ["google-auth>=2.0.0"]
 azure = ["openai[azure]>=1.0.0"]
 bedrock = ["boto3>=1.26.0"]
 all = [
-    "ai-sdk[openai,anthropic,google,azure,bedrock]",
+    "ai-sdk[openai,anthropic,google,google-vertex,azure,bedrock]",
 ]
 dev = [
     "pytest>=7.0.0",

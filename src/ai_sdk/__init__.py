@@ -52,6 +52,7 @@ from .providers.types import Message, Content, FinishReason
 from .providers.openai import create_openai
 from .providers.anthropic import create_anthropic
 from .providers.google import create_google
+from .providers.google_vertex import create_vertex
 from .providers.azure import create_azure
 from .providers.groq import create_groq
 from .providers.together import create_together
@@ -133,6 +134,7 @@ __all__ = [
     "create_openai",
     "create_anthropic",
     "create_google",
+    "create_vertex",
     "create_azure",
     "create_groq",
     "create_together",

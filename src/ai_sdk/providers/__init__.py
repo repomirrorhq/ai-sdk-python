@@ -24,6 +24,7 @@ from .types import (
 from .openai import OpenAIProvider, create_openai
 from .anthropic import AnthropicProvider, create_anthropic
 from .google import GoogleProvider, create_google
+from .google_vertex import GoogleVertexProvider, create_vertex
 from .azure import AzureOpenAIProvider, create_azure
 from .groq import GroqProvider, create_groq
 from .together import TogetherAIProvider, create_together
@@ -58,6 +59,8 @@ __all__ = [
     "create_anthropic",
     "GoogleProvider",
     "create_google",
+    "GoogleVertexProvider",
+    "create_vertex",
     "AzureOpenAIProvider",
     "create_azure",
     "GroqProvider",
