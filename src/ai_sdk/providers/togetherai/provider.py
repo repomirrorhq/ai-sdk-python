@@ -11,6 +11,7 @@ from typing import Optional, Dict, Any
 
 from ..base import BaseProvider
 from ..openai_compatible import create_openai_compatible, OpenAICompatibleProviderSettings
+from .image_model import TogetherAIImageModel
 from .types import (
     TogetherAIChatModelId,
     TogetherAICompletionModelId,
@@ -124,7 +125,15 @@ class TogetherAIProvider(BaseProvider):
         Returns:
             Image model instance
         """
-        return self._provider.image_model(model_id)
+        # Use custom TogetherAI image model for proper API handling
+        config = {
+            'provider': 'togetherai.image',
+            'base_url': self.settings.base_url or "https://api.together.xyz/v1",
+            'headers': self._get_headers,
+            'fetch': self.settings.fetch,
+        }
+        
+        return TogetherAIImageModel(model_id, config)
     
     def _get_api_key(self) -> Optional[str]:
         """Get API key from settings or environment"""
@@ -133,6 +142,21 @@ class TogetherAIProvider(BaseProvider):
             or os.getenv("TOGETHER_AI_API_KEY")
             or os.getenv("TOGETHER_API_KEY")  # Alternative env var name
         )
+    
+    def _get_headers(self) -> Dict[str, str]:
+        """Get headers for API calls"""
+        headers = {}
+        
+        # Add API key authentication
+        api_key = self._get_api_key()
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+        
+        # Add custom headers
+        if self.settings.headers:
+            headers.update(self.settings.headers)
+        
+        return headers
 
 
 def create_together(settings: Optional[TogetherAIProviderSettings] = None) -> TogetherAIProvider:

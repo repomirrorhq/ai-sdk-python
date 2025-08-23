@@ -9,6 +9,7 @@ on top of the OpenAICompatibleProvider for maximum compatibility.
 """
 
 from .provider import TogetherAIProvider, create_together
+from .image_model import TogetherAIImageModel
 from .types import (
     TogetherAIChatModelId,
     TogetherAICompletionModelId,
@@ -20,6 +21,7 @@ from .types import (
 __all__ = [
     "TogetherAIProvider",
     "create_together",
+    "TogetherAIImageModel",
     "TogetherAIChatModelId",
     "TogetherAICompletionModelId", 
     "TogetherAIEmbeddingModelId",
