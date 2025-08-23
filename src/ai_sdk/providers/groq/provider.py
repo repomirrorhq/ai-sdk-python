@@ -103,6 +103,10 @@ class GroqProvider(Provider):
             fetch_implementation=self._fetch_implementation,
         )
         
+    def transcription_model(self, model_id: GroqTranscriptionModelId) -> TranscriptionModel:
+        """Alias for transcription method for compatibility."""
+        return self.transcription(model_id)
+        
     def embedding_model(self, model_id: str):
         """Groq does not support embedding models."""
         raise NotImplementedError("Groq does not support embedding models")
