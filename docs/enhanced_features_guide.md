@@ -5,12 +5,13 @@ This guide covers the new enhanced features added to AI SDK Python, bringing it 
 ## Table of Contents
 
 1. [Enhanced Schema Validation System](#enhanced-schema-validation-system)
-2. [Framework Integrations](#framework-integrations)
+2. [UI Message Streaming](#ui-message-streaming)
+3. [Framework Integrations](#framework-integrations)
    - [FastAPI Integration](#fastapi-integration)
    - [Flask Integration](#flask-integration)
-3. [Advanced Streaming Features](#advanced-streaming-features)
-4. [Migration from Basic Usage](#migration-from-basic-usage)
-5. [Best Practices](#best-practices)
+4. [Advanced Streaming Features](#advanced-streaming-features)
+5. [Migration from Basic Usage](#migration-from-basic-usage)
+6. [Best Practices](#best-practices)
 
 ## Enhanced Schema Validation System
 
@@ -180,6 +181,350 @@ json_schema = schema.to_json_schema()
 # Check schema type
 print(f"Schema type: {schema.schema_type}")  # 'pydantic', 'jsonschema', etc.
 ```
+
+## UI Message Streaming
+
+The AI SDK Python now includes comprehensive UI Message Streaming functionality for building modern, real-time chat interfaces. This feature provides structured streaming for different message parts like text, reasoning, tool calls, and files.
+
+### Core UI Message Types
+
+```python
+from ai_sdk.ui import (
+    UIMessage, TextUIPart, ReasoningUIPart, ToolUIPart, 
+    create_ui_message_stream, JsonToSseTransformStream
+)
+
+# Create different types of UI message parts
+text_part = TextUIPart(
+    type="text",
+    text="Hello! I'll help you with that calculation.",
+    state="streaming"
+)
+
+reasoning_part = ReasoningUIPart(
+    type="reasoning", 
+    text="Let me think through this step by step...",
+    state="done"
+)
+
+tool_part = ToolUIPart(
+    type="tool-calculator",
+    tool_call_id="call_001",
+    state="output-available",
+    input={"expression": "15 * 24 + 7"},
+    output=367
+)
+
+# Create a complete UI message
+message = UIMessage(
+    id="msg_123",
+    role="assistant",
+    parts=[text_part, reasoning_part, tool_part]
+)
+```
+
+### Basic UI Message Streaming
+
+```python
+import asyncio
+from ai_sdk.ui import create_ui_message_stream, UIMessageStreamWriter
+
+async def basic_ui_streaming():
+    """Basic example of UI message streaming."""
+    
+    def execute_stream(writer: UIMessageStreamWriter) -> None:
+        # Write different types of content as they become available
+        writer.write(TextUIPart(
+            type="text",
+            text="Processing your request...",
+            state="streaming"
+        ))
+        
+        writer.write(ReasoningUIPart(
+            type="reasoning",
+            text="I need to analyze the data first.",
+            state="done"
+        ))
+        
+        writer.write(TextUIPart(
+            type="text", 
+            text=" Here's the result!",
+            state="done"
+        ))
+    
+    # Create and consume stream
+    stream = create_ui_message_stream(execute=execute_stream)
+    
+    async for chunk in stream:
+        print(f"Chunk type: {chunk.type}")
+        if hasattr(chunk, 'text'):
+            print(f"  Text: {chunk.text}")
+```
+
+### Tool Execution Streaming
+
+```python
+from ai_sdk import tool, create_openai
+
+@tool("calculator", "Perform mathematical calculations")
+def calculator(expression: str) -> float:
+    """Calculator tool for demonstrations."""
+    return eval(expression)  # Use safe evaluator in production
+
+async def tool_execution_streaming():
+    """Stream tool execution with real-time status updates."""
+    
+    async def execute_with_tools(writer: UIMessageStreamWriter) -> None:
+        # Show initial processing
+        writer.write(TextUIPart(
+            type="text",
+            text="I'll calculate that for you.",
+            state="streaming"
+        ))
+        
+        # Show tool call in progress
+        writer.write(ToolUIPart(
+            type="tool-calculator",
+            tool_call_id="call_001",
+            state="input-streaming",
+            input={"expression": "15 * 24 + 7"}
+        ))
+        
+        # Execute tool and show input available
+        writer.write(ToolUIPart(
+            type="tool-calculator", 
+            tool_call_id="call_001",
+            state="input-available",
+            input={"expression": "15 * 24 + 7"}
+        ))
+        
+        # Execute and show result
+        result = calculator("15 * 24 + 7")
+        writer.write(ToolUIPart(
+            type="tool-calculator",
+            tool_call_id="call_001", 
+            state="output-available",
+            input={"expression": "15 * 24 + 7"},
+            output=result
+        ))
+        
+        # Final response
+        writer.write(TextUIPart(
+            type="text",
+            text=f"The result is {result}.",
+            state="done"
+        ))
+    
+    stream = create_ui_message_stream(execute=execute_with_tools)
+    
+    async for chunk in stream:
+        if chunk.type.startswith("tool-"):
+            print(f"Tool: {chunk.state}")
+            if hasattr(chunk, 'output') and chunk.output:
+                print(f"  Result: {chunk.output}")
+        elif hasattr(chunk, 'text'):
+            print(f"Text: {chunk.text}")
+```
+
+### Server-Sent Events (SSE) Integration
+
+```python
+from ai_sdk.ui import JsonToSseTransformStream
+
+async def sse_streaming_endpoint():
+    """Convert UI message stream to SSE format for web clients."""
+    
+    def generate_ui_content(writer: UIMessageStreamWriter) -> None:
+        writer.write(TextUIPart(
+            type="text",
+            text="Starting analysis...",
+            state="streaming"
+        ))
+        
+        # Simulate processing steps
+        import time
+        time.sleep(0.1)
+        
+        writer.write(ReasoningUIPart(
+            type="reasoning",
+            text="Processing data patterns...",
+            state="done"
+        ))
+        
+        writer.write(TextUIPart(
+            type="text", 
+            text=" Analysis complete!",
+            state="done"
+        ))
+    
+    # Create UI message stream
+    ui_stream = create_ui_message_stream(execute=generate_ui_content)
+    
+    # Transform to SSE format
+    transformer = JsonToSseTransformStream()
+    
+    print("SSE Output:")
+    async for sse_data in transformer.transform(ui_stream):
+        print(sse_data.strip())
+        # In a real web app, you'd send this to the client
+```
+
+### FastAPI Integration with UI Streaming
+
+```python
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
+from ai_sdk.ui import create_ui_message_stream, JsonToSseTransformStream
+
+app = FastAPI()
+
+@app.get("/chat/ui-stream")
+async def ui_streaming_chat():
+    """Endpoint that returns UI message stream as SSE."""
+    
+    def generate_chat_ui(writer):
+        # Simulate AI chat response with multiple parts
+        writer.write(TextUIPart(
+            type="text",
+            text="Let me help you with that question.",
+            state="streaming"
+        ))
+        
+        writer.write(ReasoningUIPart(
+            type="reasoning", 
+            text="I need to consider multiple factors here.",
+            state="done"
+        ))
+        
+        writer.write(TextUIPart(
+            type="text",
+            text=" Based on my analysis, here's the answer...",
+            state="done"
+        ))
+    
+    # Create UI stream
+    ui_stream = create_ui_message_stream(execute=generate_chat_ui)
+    
+    # Transform to SSE
+    transformer = JsonToSseTransformStream()
+    
+    # Stream to client
+    async def sse_generator():
+        async for sse_line in transformer.transform(ui_stream):
+            yield sse_line
+    
+    return StreamingResponse(
+        sse_generator(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-AI-SDK-UI-Message-Stream": "true"
+        }
+    )
+```
+
+### Error Handling in UI Streams
+
+```python
+async def error_handling_ui_stream():
+    """Demonstrate error handling in UI message streams."""
+    
+    def execute_with_error(writer: UIMessageStreamWriter) -> None:
+        writer.write(TextUIPart(
+            type="text",
+            text="Starting complex operation...",
+            state="streaming"
+        ))
+        
+        # Simulate an error
+        raise ValueError("Simulated processing error")
+    
+    def custom_error_handler(error: Exception) -> str:
+        return f"Operation failed: {str(error)}"
+    
+    # Create stream with custom error handler
+    stream = create_ui_message_stream(
+        execute=execute_with_error,
+        on_error=custom_error_handler
+    )
+    
+    async for chunk in stream:
+        if chunk.type == "error":
+            print(f"Error occurred: {chunk.error_text}")
+        else:
+            print(f"Chunk: {chunk.type}")
+```
+
+### Advanced UI Message Features
+
+```python
+from ai_sdk.ui import (
+    FileUIPart, SourceUrlUIPart, StepStartUIPart,
+    is_tool_ui_part, get_tool_name
+)
+
+def advanced_ui_message_parts():
+    """Demonstrate advanced UI message part types."""
+    
+    # File attachment part
+    file_part = FileUIPart(
+        type="file",
+        media_type="image/png",
+        filename="chart.png", 
+        url="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+    )
+    
+    # Source reference part
+    source_part = SourceUrlUIPart(
+        type="source-url",
+        source_id="src_001",
+        url="https://example.com/data.csv",
+        title="Sales Data 2024"
+    )
+    
+    # Step boundary part
+    step_part = StepStartUIPart(type="step-start")
+    
+    # Tool part utilities
+    tool_part = ToolUIPart(
+        type="tool-web-search",
+        tool_call_id="call_002",
+        state="input-available",
+        input={"query": "Python best practices"}
+    )
+    
+    print(f"Is tool part: {is_tool_ui_part(tool_part)}")  # True
+    print(f"Tool name: {get_tool_name(tool_part)}")  # "web-search"
+    
+    # Create comprehensive message
+    message = UIMessage(
+        id="msg_advanced",
+        role="assistant", 
+        parts=[
+            TextUIPart(type="text", text="Here's your analysis:"),
+            step_part,
+            tool_part,
+            file_part,
+            source_part,
+            TextUIPart(type="text", text="Analysis complete!")
+        ]
+    )
+    
+    return message
+```
+
+### UI Message Streaming Benefits
+
+1. **Real-time Updates**: Users see responses as they're generated
+2. **Tool Visibility**: Show tool execution status and results  
+3. **Rich Content**: Support for text, reasoning, files, and sources
+4. **Framework Agnostic**: Works with FastAPI, Flask, Django, etc.
+5. **Type Safety**: Full Pydantic integration with proper typing
+6. **Error Handling**: Graceful error propagation and recovery
+7. **SSE Ready**: Direct Server-Sent Events compatibility
+
+The UI Message Streaming system enables building modern chat interfaces that provide real-time feedback about AI processing, tool execution, and multi-step reasoning - creating a much more engaging user experience.
 
 ## Framework Integrations
 
@@ -615,6 +960,7 @@ async def secure_chat(model, messages):
 The enhanced AI SDK Python now provides comprehensive feature parity with the TypeScript version, including:
 
 - ✅ **Multiple Schema Validation Libraries** - Flexible validation with your preferred library
+- ✅ **UI Message Streaming** - Real-time streaming for modern chat interfaces with tool execution visibility
 - ✅ **Framework Integrations** - FastAPI and Flask integrations with decorators and utilities  
 - ✅ **Advanced Streaming** - Enhanced streaming capabilities with custom processing
 - ✅ **Production Ready** - Error handling, security, and performance optimizations
