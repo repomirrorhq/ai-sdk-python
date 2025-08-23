@@ -241,3 +241,30 @@ class NoObjectGeneratedError(AISDKError):
         )
         self.response_text = response_text
         self.schema_name = schema_name
+
+
+class LoadAPIKeyError(AISDKError):
+    """Error for API key loading failures."""
+    
+    def __init__(
+        self,
+        message: str,
+        environment_variable: Optional[str] = None,
+        parameter_name: Optional[str] = None,
+    ) -> None:
+        """Initialize the load API key error.
+        
+        Args:
+            message: Error message
+            environment_variable: Name of the environment variable that was checked
+            parameter_name: Name of the parameter for the API key
+        """
+        super().__init__(
+            message,
+            metadata={
+                "environment_variable": environment_variable,
+                "parameter_name": parameter_name,
+            },
+        )
+        self.environment_variable = environment_variable
+        self.parameter_name = parameter_name

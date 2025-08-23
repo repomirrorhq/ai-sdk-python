@@ -11,6 +11,7 @@ from .base import (
     ModelNotFoundError,
     ContentFilterError,
     NoObjectGeneratedError,
+    LoadAPIKeyError,
 )
 
 __all__ = [
@@ -24,4 +25,5 @@ __all__ = [
     "ModelNotFoundError",
     "ContentFilterError",
     "NoObjectGeneratedError",
+    "LoadAPIKeyError",
 ]
