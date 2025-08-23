@@ -142,15 +142,64 @@ class BedrockProvider(Provider):
             **kwargs
         )
     
+    async def _get_auth(self):
+        """Create BedrockAuth instance."""
+        from .auth import BedrockAuth
+        
+        # Check for API key authentication first
+        api_key = self.settings.api_key or os.getenv("AWS_BEARER_TOKEN_BEDROCK")
+        
+        if api_key and api_key.strip():
+            # For API key auth, we still need region info
+            region = self.settings.region or os.getenv("AWS_REGION", "us-east-1")
+            credentials = BedrockCredentials(
+                region=region,
+                access_key_id="", 
+                secret_access_key="",
+                session_token=None
+            )
+            return BedrockAuth(credentials, api_key=api_key.strip())
+        else:
+            # Get credentials for SigV4 auth
+            region = self.settings.region or os.getenv("AWS_REGION")
+            access_key_id = self.settings.access_key_id or os.getenv("AWS_ACCESS_KEY_ID")  
+            secret_access_key = self.settings.secret_access_key or os.getenv("AWS_SECRET_ACCESS_KEY")
+            session_token = self.settings.session_token or os.getenv("AWS_SESSION_TOKEN")
+            
+            if not region:
+                raise ValueError(
+                    "AWS region is required. Set AWS_REGION environment variable or provide region in settings."
+                )
+            if not access_key_id:
+                raise ValueError(
+                    "AWS access key ID is required. Set AWS_ACCESS_KEY_ID environment variable or provide access_key_id in settings."
+                )
+            if not secret_access_key:
+                raise ValueError(
+                    "AWS secret access key is required. Set AWS_SECRET_ACCESS_KEY environment variable or provide secret_access_key in settings."
+                )
+                
+            credentials = BedrockCredentials(
+                region=region,
+                access_key_id=access_key_id,
+                secret_access_key=secret_access_key,
+                session_token=session_token
+            )
+            return BedrockAuth(credentials)
+
     async def embedding_model(self, model_id: BedrockEmbeddingModelId, **kwargs) -> EmbeddingModel:
         """Create a Bedrock embedding model."""
         from .embedding_model import BedrockEmbeddingModel
         
+        auth = await self._get_auth()
+        region = self.settings.region or os.getenv("AWS_REGION", "us-east-1")
+        base_url = self._get_base_url()
+        
         return BedrockEmbeddingModel(
             model_id=model_id,
-            auth=self.auth,
-            region=self.region,
-            base_url=self.base_url,
+            auth=auth,
+            region=region,
+            base_url=base_url,
             **kwargs
         )
         
@@ -158,11 +207,15 @@ class BedrockProvider(Provider):
         """Create a Bedrock image model."""
         from .image_model import BedrockImageModel
         
+        auth = await self._get_auth()
+        region = self.settings.region or os.getenv("AWS_REGION", "us-east-1")
+        base_url = self._get_base_url()
+        
         return BedrockImageModel(
             model_id=model_id,
-            auth=self.auth,
-            region=self.region,
-            base_url=self.base_url,
+            auth=auth,
+            region=region,
+            base_url=base_url,
             **kwargs
         )
     

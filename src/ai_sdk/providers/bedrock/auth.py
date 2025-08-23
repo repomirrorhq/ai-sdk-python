@@ -1,6 +1,7 @@
 """AWS SigV4 authentication for Bedrock API calls."""
 
 from typing import Dict, Any, Optional, Callable, Awaitable, Union
+import json
 
 import httpx
 
@@ -13,6 +14,63 @@ try:
     BOTO3_AVAILABLE = True
 except ImportError:
     BOTO3_AVAILABLE = False
+
+
+class BedrockAuth:
+    """Authentication handler for Bedrock API."""
+    
+    def __init__(
+        self,
+        credentials: BedrockCredentials,
+        api_key: Optional[str] = None
+    ):
+        self.credentials = credentials
+        self.api_key = api_key
+        
+    async def get_headers(
+        self,
+        method: str,
+        url: str,
+        body: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, str]:
+        """Get authenticated headers for the request."""
+        if self.api_key:
+            return {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
+        
+        # Use SigV4 signing
+        if not BOTO3_AVAILABLE:
+            raise ImportError(
+                "boto3 is required for AWS SigV4 authentication. "
+                "Install it with: pip install 'ai-sdk[bedrock]'"
+            )
+        
+        # Convert body to string if needed
+        body_str = json.dumps(body) if body else ""
+        
+        # Create AWS request
+        aws_request = AWSRequest(
+            method=method,
+            url=url,
+            data=body_str,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        # Create credentials object for botocore
+        boto_credentials = Credentials(
+            access_key=self.credentials.access_key_id,
+            secret_key=self.credentials.secret_access_key,
+            token=self.credentials.session_token
+        )
+        
+        # Sign the request
+        signer = SigV4Auth(boto_credentials, "bedrock", self.credentials.region)
+        signer.add_auth(aws_request)
+        
+        # Return signed headers
+        return dict(aws_request.headers)
 
 
 async def create_sigv4_fetch_function(
