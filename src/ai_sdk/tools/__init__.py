@@ -31,6 +31,14 @@ from .schema_enhanced import (
     validate_schema_input,
     create_pydantic_tool_schema,
 )
+from .mcp import (
+    MCPClient,
+    MCPClientConfig,
+    create_mcp_client,
+    StdioMCPTransport,
+    StdioConfig,
+    MCPTransport,
+)
 
 __all__ = [
     # Core tool types and functions
@@ -61,4 +69,12 @@ __all__ = [
     "normalize_schema",
     "validate_schema_input",
     "create_pydantic_tool_schema",
+    
+    # MCP (Model Context Protocol)
+    "MCPClient",
+    "MCPClientConfig",
+    "create_mcp_client",
+    "StdioMCPTransport", 
+    "StdioConfig",
+    "MCPTransport",
 ]

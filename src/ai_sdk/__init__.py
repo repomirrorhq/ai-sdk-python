@@ -29,6 +29,7 @@ from .core.embed import embed, embed_many, EmbedResult, EmbedManyResult, Embeddi
 
 # Tools
 from .tools import Tool, ToolCall, ToolResult, tool, simple_tool, ToolRegistry
+from .tools import MCPClient, MCPClientConfig, create_mcp_client, StdioMCPTransport, StdioConfig
 
 # Agent system
 from .agent import Agent, AgentSettings
@@ -144,6 +145,12 @@ __all__ = [
     "tool",
     "simple_tool",
     "ToolRegistry",
+    # MCP (Model Context Protocol)
+    "MCPClient",
+    "MCPClientConfig",
+    "create_mcp_client",
+    "StdioMCPTransport",
+    "StdioConfig",
     # Agent system
     "Agent",
     "AgentSettings",
