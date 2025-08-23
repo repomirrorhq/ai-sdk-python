@@ -1,7 +1,7 @@
 """AI SDK for Python - The AI Toolkit for Python.
 
 This is a Python port of the AI SDK, providing a unified interface for working
-with various AI providers including OpenAI, Anthropic, Google, and many more.
+with various AI providers including OpenAI, Anthropic, Google, Azure OpenAI, and many more.
 
 Key features:
 - Text generation with `generate_text()` and `stream_text()`
@@ -31,6 +31,7 @@ from .providers.types import Message, Content, FinishReason
 from .providers.openai import create_openai
 from .providers.anthropic import create_anthropic
 from .providers.google import create_google
+from .providers.azure import create_azure
 
 # Errors
 from .errors import AISDKError, APIError, InvalidArgumentError
@@ -69,6 +70,7 @@ __all__ = [
     "create_openai",
     "create_anthropic",
     "create_google",
+    "create_azure",
     # Errors
     "AISDKError",
     "APIError", 

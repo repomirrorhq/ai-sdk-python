@@ -24,6 +24,7 @@ from .types import (
 from .openai import OpenAIProvider, create_openai
 from .anthropic import AnthropicProvider, create_anthropic
 from .google import GoogleProvider, create_google
+from .azure import AzureOpenAIProvider, create_azure
 
 __all__ = [
     "Provider",
@@ -48,4 +49,6 @@ __all__ = [
     "create_anthropic",
     "GoogleProvider",
     "create_google",
+    "AzureOpenAIProvider",
+    "create_azure",
 ]
