@@ -51,6 +51,11 @@ from .middleware import (
 # Streaming utilities
 from .streaming import smooth_stream, ChunkDetector
 
+# Framework Adapters
+from .adapters import langchain_adapter, llamaindex_adapter
+from .adapters.langchain import to_ui_message_stream as langchain_to_ui_stream
+from .adapters.llamaindex import to_ui_message_stream as llamaindex_to_ui_stream
+
 # Provider interfaces
 from .providers.base import Provider, LanguageModel, EmbeddingModel, ImageModel, SpeechModel, TranscriptionModel
 from .providers.types import Message, Content, FinishReason
@@ -158,6 +163,11 @@ __all__ = [
     # Streaming utilities
     "smooth_stream",
     "ChunkDetector",
+    # Framework Adapters
+    "langchain_adapter",
+    "llamaindex_adapter", 
+    "langchain_to_ui_stream",
+    "llamaindex_to_ui_stream",
     # Provider interfaces  
     "Provider",
     "LanguageModel", 
