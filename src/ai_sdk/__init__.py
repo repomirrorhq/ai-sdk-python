@@ -66,6 +66,16 @@ from .adapters import langchain_adapter, llamaindex_adapter
 from .adapters.langchain import to_ui_message_stream as langchain_to_ui_stream
 from .adapters.llamaindex import to_ui_message_stream as llamaindex_to_ui_stream
 
+# UI Message Streaming
+from .ui import (
+    UIMessage, UIMessagePart, TextUIPart, ReasoningUIPart, ToolUIPart, DynamicToolUIPart,
+    SourceUrlUIPart, SourceDocumentUIPart, FileUIPart, DataUIPart, StepStartUIPart,
+    UITools, UITool, UIDataTypes, is_tool_ui_part, get_tool_name,
+    UIMessageStream, UIMessageStreamWriter, UIMessageChunk, UIMessageStreamOnFinishCallback,
+    create_ui_message_stream, create_ui_message_stream_response, pipe_ui_message_stream_to_response,
+    read_ui_message_stream, JsonToSseTransformStream, UI_MESSAGE_STREAM_HEADERS
+)
+
 # Framework Integrations
 from .integrations import (
     fastapi_ai_middleware, AIFastAPI, streaming_chat_endpoint, websocket_chat_endpoint,
@@ -218,6 +228,13 @@ __all__ = [
     "llamaindex_adapter", 
     "langchain_to_ui_stream",
     "llamaindex_to_ui_stream",
+    # UI Message Streaming
+    "UIMessage", "UIMessagePart", "TextUIPart", "ReasoningUIPart", "ToolUIPart", "DynamicToolUIPart",
+    "SourceUrlUIPart", "SourceDocumentUIPart", "FileUIPart", "DataUIPart", "StepStartUIPart",
+    "UITools", "UITool", "UIDataTypes", "is_tool_ui_part", "get_tool_name",
+    "UIMessageStream", "UIMessageStreamWriter", "UIMessageChunk", "UIMessageStreamOnFinishCallback",
+    "create_ui_message_stream", "create_ui_message_stream_response", "pipe_ui_message_stream_to_response",
+    "read_ui_message_stream", "JsonToSseTransformStream", "UI_MESSAGE_STREAM_HEADERS",
     # Framework Integrations
     "fastapi_ai_middleware",
     "AIFastAPI",
