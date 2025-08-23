@@ -41,6 +41,11 @@ from .assemblyai import AssemblyAIProvider, create_assemblyai
 from .fal import FalProvider, create_fal
 from .hume import HumeProvider, create_hume
 from .lmnt import LMNTProvider, create_lmnt
+from .fireworks import FireworksProvider, create_fireworks_provider
+from .cerebras import CerebrasProvider, create_cerebras_provider  
+from .replicate import ReplicateProvider, create_replicate_provider
+from .gladia import GladiaProvider, create_gladia_provider
+from .luma import LumaProvider, create_luma_provider
 
 __all__ = [
     "Provider",
@@ -98,4 +103,14 @@ __all__ = [
     "create_hume",
     "LMNTProvider",
     "create_lmnt",
+    "FireworksProvider",
+    "create_fireworks_provider",
+    "CerebrasProvider", 
+    "create_cerebras_provider",
+    "ReplicateProvider",
+    "create_replicate_provider",
+    "GladiaProvider",
+    "create_gladia_provider",
+    "LumaProvider",
+    "create_luma_provider",
 ]
