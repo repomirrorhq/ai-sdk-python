@@ -27,6 +27,7 @@ from .google import GoogleProvider, create_google
 from .azure import AzureOpenAIProvider, create_azure
 from .groq import GroqProvider, create_groq
 from .together import TogetherAIProvider, create_together
+from .bedrock import BedrockProvider, create_bedrock
 
 __all__ = [
     "Provider",
@@ -57,4 +58,6 @@ __all__ = [
     "create_groq",
     "TogetherAIProvider",
     "create_together",
+    "BedrockProvider",
+    "create_bedrock",
 ]

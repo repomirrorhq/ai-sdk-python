@@ -55,6 +55,7 @@ from .providers.google import create_google
 from .providers.azure import create_azure
 from .providers.groq import create_groq
 from .providers.together import create_together
+from .providers.bedrock import create_bedrock
 
 # Errors
 from .errors import AISDKError, APIError, InvalidArgumentError
@@ -127,6 +128,7 @@ __all__ = [
     "create_azure",
     "create_groq",
     "create_together",
+    "create_bedrock",
     # Errors
     "AISDKError",
     "APIError", 
