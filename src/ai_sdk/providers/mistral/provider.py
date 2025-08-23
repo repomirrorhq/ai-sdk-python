@@ -87,10 +87,13 @@ class MistralProvider(Provider):
         """Create a Mistral embedding model."""
         from .embedding_model import MistralEmbeddingModel
         
+        api_key = self._get_api_key()
+        base_url = self._get_base_url()
+        
         return MistralEmbeddingModel(
             model_id=model_id,
-            api_key=self.api_key,
-            base_url=self.base_url,
+            api_key=api_key,
+            base_url=base_url,
             **kwargs
         )
         
