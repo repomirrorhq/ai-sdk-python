@@ -13,7 +13,7 @@ Key features:
 - Type safety with Pydantic models
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 # Core functionality
 from .core.generate_text import generate_text, stream_text
