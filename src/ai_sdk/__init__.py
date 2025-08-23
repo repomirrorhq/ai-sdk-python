@@ -40,6 +40,8 @@ from .middleware import (
     caching_middleware,
     default_settings_middleware,
     telemetry_middleware,
+    extract_reasoning_middleware,
+    simulate_streaming_middleware,
 )
 
 # Provider interfaces
@@ -106,6 +108,8 @@ __all__ = [
     "caching_middleware",
     "default_settings_middleware",
     "telemetry_middleware",
+    "extract_reasoning_middleware",
+    "simulate_streaming_middleware",
     # Provider interfaces  
     "Provider",
     "LanguageModel", 

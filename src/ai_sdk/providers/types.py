@@ -68,8 +68,16 @@ class ToolResultContent(BaseModel):
     is_error: bool = False
 
 
+class ReasoningContent(BaseModel):
+    """Reasoning content extracted from text."""
+    
+    type: Literal["reasoning"] = "reasoning"
+    text: str
+    provider_metadata: Optional[ProviderMetadata] = None
+
+
 # Union of all content types
-Content = Union[TextContent, ImageContent, ToolCallContent, ToolResultContent]
+Content = Union[TextContent, ImageContent, ToolCallContent, ToolResultContent, ReasoningContent]
 
 
 class Message(BaseModel):
@@ -143,6 +151,29 @@ class ToolCallDelta(StreamPart):
     tool_call_id: str
     tool_name: Optional[str] = None
     args_delta: Optional[str] = None
+
+
+class ReasoningStart(StreamPart):
+    """Reasoning start in streaming response."""
+    
+    type: Literal["reasoning-start"] = "reasoning-start"
+    id: str
+    provider_metadata: Optional[ProviderMetadata] = None
+
+
+class ReasoningDelta(StreamPart):
+    """Reasoning delta in streaming response."""
+    
+    type: Literal["reasoning-delta"] = "reasoning-delta"
+    id: str
+    delta: str
+
+
+class ReasoningEnd(StreamPart):
+    """Reasoning end in streaming response."""
+    
+    type: Literal["reasoning-end"] = "reasoning-end"
+    id: str
 
 
 class FinishPart(StreamPart):

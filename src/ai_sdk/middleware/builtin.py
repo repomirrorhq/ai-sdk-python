@@ -14,10 +14,13 @@ import logging
 import time
 import hashlib
 import json
-from typing import Optional, Dict, Any, Union
+import re
+from typing import Optional, Dict, Any, Union, List
 from datetime import datetime, timedelta
 
 from ..providers.base import LanguageModel
+from ..providers.types import Content, TextContent, ReasoningContent
+from ..utils.text_utils import get_potential_start_index
 from .types import GenerateTextParams, GenerateTextResult, StreamTextResult
 from .base import SimpleMiddleware, LanguageModelMiddleware
 
@@ -401,5 +404,200 @@ def telemetry_middleware(
     
     middleware = SimpleMiddleware()
     middleware.wrapGenerate = wrap_generate
+    middleware.wrapStream = wrap_stream
+    return middleware
+
+
+def extract_reasoning_middleware(
+    tag_name: str,
+    separator: str = "\n",
+    start_with_reasoning: bool = False,
+) -> LanguageModelMiddleware:
+    """Create a middleware to extract XML-tagged reasoning sections from responses.
+    
+    This middleware extracts reasoning sections wrapped in XML tags (e.g., <thinking>)
+    from the generated text and exposes them as separate reasoning content parts.
+    This is useful for models that include their reasoning process in the response.
+    
+    Args:
+        tag_name: The XML tag name to extract reasoning from (e.g., "thinking")
+        separator: Separator to use between reasoning and text sections
+        start_with_reasoning: Whether the response starts with reasoning tokens
+        
+    Returns:
+        A configured reasoning extraction middleware
+        
+    Example:
+        ```python
+        # Extract <thinking> tags from responses
+        middleware = extract_reasoning_middleware(
+            tag_name="thinking",
+            separator="\\n",
+            start_with_reasoning=False
+        )
+        
+        # For models that start responses with reasoning
+        middleware = extract_reasoning_middleware(
+            tag_name="reasoning",
+            start_with_reasoning=True
+        )
+        ```
+    """
+    opening_tag = f"<{tag_name}>"
+    closing_tag = f"</{tag_name}>"
+    
+    async def wrap_generate(*, do_generate, params, model):
+        result = await do_generate()
+        
+        transformed_content: List[Content] = []
+        
+        for part in result.content:
+            if part.type != "text":
+                transformed_content.append(part)
+                continue
+            
+            text = opening_tag + part.text if start_with_reasoning else part.text
+            
+            # Find all reasoning sections
+            pattern = rf"{re.escape(opening_tag)}(.*?){re.escape(closing_tag)}"
+            matches = list(re.finditer(pattern, text, re.DOTALL))
+            
+            if not matches:
+                transformed_content.append(part)
+                continue
+            
+            # Extract reasoning text
+            reasoning_text = separator.join(match.group(1) for match in matches)
+            
+            # Remove reasoning sections from text
+            text_without_reasoning = text
+            for match in reversed(matches):  # Reverse to maintain indices
+                before_match = text_without_reasoning[:match.start()]
+                after_match = text_without_reasoning[match.end():]
+                
+                # Add separator between sections if both have content
+                connector = separator if (before_match and after_match) else ""
+                text_without_reasoning = before_match + connector + after_match
+            
+            # Add reasoning content
+            if reasoning_text.strip():
+                transformed_content.append(ReasoningContent(
+                    type="reasoning",
+                    text=reasoning_text,
+                    provider_metadata=getattr(part, 'provider_metadata', None)
+                ))
+            
+            # Add cleaned text content
+            if text_without_reasoning.strip():
+                transformed_content.append(TextContent(
+                    type="text", 
+                    text=text_without_reasoning
+                ))
+        
+        # Return result with transformed content
+        result.content = transformed_content
+        return result
+    
+    # Note: Stream processing for reasoning extraction would be complex
+    # due to the need to handle partial tags across stream chunks.
+    # For now, we only support generate mode.
+    
+    middleware = SimpleMiddleware()
+    middleware.wrapGenerate = wrap_generate
+    return middleware
+
+
+def simulate_streaming_middleware() -> LanguageModelMiddleware:
+    """Create a middleware that simulates streaming from a generate call.
+    
+    This middleware is useful for testing streaming behavior when you have
+    a model that only supports generate mode, or for consistent behavior
+    across streaming and non-streaming code paths.
+    
+    Returns:
+        A middleware that simulates streaming responses
+        
+    Example:
+        ```python
+        # Make any model "streamable"
+        middleware = simulate_streaming_middleware()
+        
+        wrapped_model = wrap_language_model(
+            model=non_streaming_model,
+            middleware=[middleware]
+        )
+        
+        # Now you can use stream_text even with non-streaming models
+        async for chunk in stream_text(model=wrapped_model, prompt="Hello"):
+            print(chunk.text_delta)
+        ```
+    """
+    async def wrap_stream(*, do_generate, params, model):
+        # Call generate instead of stream
+        result = await do_generate()
+        
+        # Create a simulated stream from the result
+        async def simulate_stream():
+            # Simulate stream-start
+            yield {
+                "type": "stream-start",
+                "warnings": getattr(result, 'warnings', None)
+            }
+            
+            # Simulate response metadata
+            if hasattr(result, 'response_metadata') and result.response_metadata:
+                yield {
+                    "type": "response-metadata",
+                    **result.response_metadata
+                }
+            
+            text_id = 0
+            reasoning_id = 0
+            
+            for part in result.content:
+                if part.type == "text" and part.text:
+                    yield {"type": "text-start", "id": str(text_id)}
+                    yield {
+                        "type": "text-delta", 
+                        "id": str(text_id),
+                        "text_delta": part.text
+                    }
+                    yield {"type": "text-end", "id": str(text_id)}
+                    text_id += 1
+                    
+                elif part.type == "reasoning" and part.text:
+                    yield {
+                        "type": "reasoning-start",
+                        "id": str(reasoning_id),
+                        "provider_metadata": getattr(part, 'provider_metadata', None)
+                    }
+                    yield {
+                        "type": "reasoning-delta",
+                        "id": str(reasoning_id), 
+                        "delta": part.text
+                    }
+                    yield {"type": "reasoning-end", "id": str(reasoning_id)}
+                    reasoning_id += 1
+                    
+                else:
+                    # Pass through other content types
+                    yield part.dict() if hasattr(part, 'dict') else part
+            
+            # Simulate finish
+            yield {
+                "type": "finish",
+                "finish_reason": result.finish_reason,
+                "usage": result.usage.dict() if hasattr(result.usage, 'dict') else result.usage,
+                "provider_metadata": getattr(result, 'provider_metadata', None)
+            }
+        
+        # Return the simulated stream
+        return {
+            "stream": simulate_stream(),
+            "request_metadata": getattr(result, 'request_metadata', None),
+            "response_metadata": getattr(result, 'response_metadata', None)
+        }
+    
+    middleware = SimpleMiddleware()
     middleware.wrapStream = wrap_stream
     return middleware
