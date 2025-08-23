@@ -29,6 +29,7 @@ from .groq import GroqProvider, create_groq
 from .together import TogetherAIProvider, create_together
 from .bedrock import BedrockProvider, create_bedrock
 from .mistral import MistralProvider, create_mistral
+from .cohere import CohereProvider, create_cohere_provider
 
 __all__ = [
     "Provider",
@@ -63,4 +64,6 @@ __all__ = [
     "create_bedrock",
     "MistralProvider",
     "create_mistral",
+    "CohereProvider",
+    "create_cohere_provider",
 ]
