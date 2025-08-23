@@ -28,6 +28,7 @@ from .azure import AzureOpenAIProvider, create_azure
 from .groq import GroqProvider, create_groq
 from .together import TogetherAIProvider, create_together
 from .bedrock import BedrockProvider, create_bedrock
+from .mistral import MistralProvider, create_mistral
 
 __all__ = [
     "Provider",
@@ -60,4 +61,6 @@ __all__ = [
     "create_together",
     "BedrockProvider",
     "create_bedrock",
+    "MistralProvider",
+    "create_mistral",
 ]
