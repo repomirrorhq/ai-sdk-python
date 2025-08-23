@@ -93,17 +93,27 @@ class MistralLanguageModel(LanguageModel):
         if response_format:
             # Check if we should use Mistral's json_schema format
             if (response_format.get("type") == "json" and 
-                response_format.get("schema") is not None):
+                response_format.get("schema") is not None and
+                mistral_options.structured_outputs is not False):  # Default to True if not specified
+                
+                # Determine strict mode - use provider option or response format setting
+                strict_mode = (mistral_options.strict_json_schema 
+                             if mistral_options.strict_json_schema is not None
+                             else response_format.get("strict", False))
+                
                 # Use Mistral's json_schema response format
                 payload["response_format"] = {
                     "type": "json_schema",
                     "json_schema": {
                         "schema": response_format["schema"],
-                        "strict": response_format.get("strict", False),
+                        "strict": strict_mode,
                         "name": response_format.get("name", "response"),
                         "description": response_format.get("description")
                     }
                 }
+            elif response_format.get("type") == "json" and response_format.get("schema") is None:
+                # Use json_object for schema-less JSON requests
+                payload["response_format"] = {"type": "json_object"}
             else:
                 payload["response_format"] = response_format
             
@@ -235,17 +245,27 @@ class MistralLanguageModel(LanguageModel):
         if response_format:
             # Check if we should use Mistral's json_schema format
             if (response_format.get("type") == "json" and 
-                response_format.get("schema") is not None):
+                response_format.get("schema") is not None and
+                mistral_options.structured_outputs is not False):  # Default to True if not specified
+                
+                # Determine strict mode - use provider option or response format setting
+                strict_mode = (mistral_options.strict_json_schema 
+                             if mistral_options.strict_json_schema is not None
+                             else response_format.get("strict", False))
+                
                 # Use Mistral's json_schema response format
                 payload["response_format"] = {
                     "type": "json_schema",
                     "json_schema": {
                         "schema": response_format["schema"],
-                        "strict": response_format.get("strict", False),
+                        "strict": strict_mode,
                         "name": response_format.get("name", "response"),
                         "description": response_format.get("description")
                     }
                 }
+            elif response_format.get("type") == "json" and response_format.get("schema") is None:
+                # Use json_object for schema-less JSON requests
+                payload["response_format"] = {"type": "json_object"}
             else:
                 payload["response_format"] = response_format
             
