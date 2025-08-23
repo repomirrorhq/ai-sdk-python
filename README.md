@@ -32,6 +32,7 @@ This is a comprehensive Python port of the [Vercel AI SDK](https://github.com/ve
 - ✅ Agent system with multi-step reasoning
 - ✅ Advanced tool calling and orchestration
 - ✅ Comprehensive middleware system
+- ✅ LangChain and LlamaIndex adapters for ecosystem integration
 
 ### Providers ✅ ALL 29 IMPLEMENTED
 - ✅ **OpenAI** - GPT, DALL-E, Whisper, embeddings
@@ -64,11 +65,11 @@ This is a comprehensive Python port of the [Vercel AI SDK](https://github.com/ve
 - ✅ **Gateway** - AI Gateway for routing/analytics
 - ✅ **OpenAI-Compatible** - Local & custom endpoints
 
-### Framework Integrations (Planned)
-- **FastAPI** - Async routes and WebSocket streaming
-- **Django** - Model integration and admin interface
-- **Flask** - Extension and streaming support
-- **Starlette/Sanic** - ASGI framework support
+### Framework Integrations ✅ 2/4 COMPLETE
+- ✅ **LangChain** - Seamless integration with LangChain ecosystem
+- ✅ **LlamaIndex** - RAG and document processing integration
+- ⏳ **FastAPI** - Async routes and WebSocket streaming (planned)
+- ⏳ **Django** - Model integration and admin interface (planned)
 
 ## 🛠️ Development
 
