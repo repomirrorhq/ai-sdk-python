@@ -45,6 +45,7 @@ from .fireworks import FireworksProvider, create_fireworks_provider
 from .cerebras import CerebrasProvider, create_cerebras_provider  
 from .replicate import ReplicateProvider, create_replicate_provider
 from .gladia import GladiaProvider, create_gladia_provider
+from .revai import RevAIProvider, create_revai
 from .luma import LumaProvider, create_luma_provider
 from .vercel import VercelProvider, create_vercel_provider
 from .gateway import GatewayProvider, create_gateway_provider, gateway
@@ -114,6 +115,8 @@ __all__ = [
     "create_replicate_provider",
     "GladiaProvider",
     "create_gladia_provider",
+    "RevAIProvider",
+    "create_revai",
     "LumaProvider",
     "create_luma_provider",
     "VercelProvider",
