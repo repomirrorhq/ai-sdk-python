@@ -24,7 +24,7 @@ from ..types import (
     Usage,
     ProviderMetadata
 )
-from .types import GroqChatModelId
+from .types import GroqChatModelId, GroqProviderOptions
 from .message_converter import convert_to_groq_messages, convert_from_groq_response
 from .api_types import GroqChatCompletionRequest, GroqChatCompletionResponse
 
@@ -80,6 +80,7 @@ class GroqChatLanguageModel(LanguageModel, StreamingLanguageModel):
         response_format: Optional[Dict[str, Any]] = None,
         seed: Optional[int] = None,
         user: Optional[str] = None,
+        provider_options: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> GenerateTextResult:
         """Generate text using Groq API.
@@ -102,6 +103,9 @@ class GroqChatLanguageModel(LanguageModel, StreamingLanguageModel):
         Returns:
             GenerateTextResult with the generated text and metadata
         """
+        # Parse provider options
+        groq_options = GroqProviderOptions(**(provider_options or {}))
+        
         # Convert messages to Groq format
         groq_messages = convert_to_groq_messages(messages)
         
@@ -119,8 +123,14 @@ class GroqChatLanguageModel(LanguageModel, StreamingLanguageModel):
             tool_choice=tool_choice,
             response_format=response_format,
             seed=seed,
-            user=user,
+            user=user or groq_options.user,  # Allow provider option override
             stream=False,
+            # Groq-specific provider options
+            reasoning_format=groq_options.reasoning_format,
+            reasoning_effort=groq_options.reasoning_effort,
+            parallel_tool_calls=groq_options.parallel_tool_calls,
+            structured_outputs=groq_options.structured_outputs,
+            service_tier=groq_options.service_tier,
             **kwargs
         )
         
@@ -170,6 +180,7 @@ class GroqChatLanguageModel(LanguageModel, StreamingLanguageModel):
         response_format: Optional[Dict[str, Any]] = None,
         seed: Optional[int] = None,
         user: Optional[str] = None,
+        provider_options: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> StreamTextResult:
         """Stream text generation using Groq API.
@@ -177,6 +188,9 @@ class GroqChatLanguageModel(LanguageModel, StreamingLanguageModel):
         Returns:
             StreamTextResult with async iterator of text chunks
         """
+        # Parse provider options
+        groq_options = GroqProviderOptions(**(provider_options or {}))
+        
         # Convert messages to Groq format
         groq_messages = convert_to_groq_messages(messages)
         
@@ -194,8 +208,14 @@ class GroqChatLanguageModel(LanguageModel, StreamingLanguageModel):
             tool_choice=tool_choice,
             response_format=response_format,
             seed=seed,
-            user=user,
+            user=user or groq_options.user,  # Allow provider option override
             stream=True,
+            # Groq-specific provider options
+            reasoning_format=groq_options.reasoning_format,
+            reasoning_effort=groq_options.reasoning_effort,
+            parallel_tool_calls=groq_options.parallel_tool_calls,
+            structured_outputs=groq_options.structured_outputs,
+            service_tier=groq_options.service_tier,
             **kwargs
         )
         

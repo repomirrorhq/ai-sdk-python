@@ -5,6 +5,7 @@ Type definitions for Groq provider
 from typing import Dict, Optional, Callable
 from dataclasses import dataclass
 from typing_extensions import Literal
+from pydantic import BaseModel
 
 
 # Model identifier types based on https://console.groq.com/docs/models
@@ -58,3 +59,19 @@ class GroqConfig:
     max_retries: int
     timeout: float
     extra_headers: Optional[Dict[str, str]]
+
+
+class GroqProviderOptions(BaseModel):
+    """Provider-specific options for Groq language models."""
+    
+    # Reasoning options (for supported models)
+    reasoning_format: Optional[Literal["parsed", "raw", "hidden"]] = None
+    reasoning_effort: Optional[str] = None
+    
+    # Advanced options
+    parallel_tool_calls: Optional[bool] = None
+    structured_outputs: Optional[bool] = None
+    user: Optional[str] = None
+    
+    # Service tier for request prioritization
+    service_tier: Optional[Literal["on_demand", "flex", "auto"]] = None

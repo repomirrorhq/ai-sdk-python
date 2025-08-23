@@ -32,7 +32,7 @@ Example usage:
 from .provider import GroqProvider, create_groq, groq
 from .language_model import GroqChatLanguageModel
 from .transcription_model import GroqTranscriptionModel
-from .types import GroqChatModelId, GroqTranscriptionModelId
+from .types import GroqChatModelId, GroqTranscriptionModelId, GroqProviderOptions
 from .api_types import (
     GroqChatCompletionRequest,
     GroqChatCompletionResponse,
@@ -50,6 +50,7 @@ __all__ = [
     "GroqTranscriptionModel",
     "GroqChatModelId",
     "GroqTranscriptionModelId",
+    "GroqProviderOptions",
     "GroqChatCompletionRequest",
     "GroqChatCompletionResponse", 
     "GroqMessage",
