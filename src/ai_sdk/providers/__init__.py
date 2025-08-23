@@ -48,6 +48,7 @@ from .gladia import GladiaProvider, create_gladia_provider
 from .luma import LumaProvider, create_luma_provider
 from .vercel import VercelProvider, create_vercel_provider
 from .gateway import GatewayProvider, create_gateway_provider, gateway
+from .openai_compatible import OpenAICompatibleProvider, create_openai_compatible
 
 __all__ = [
     "Provider",
@@ -120,4 +121,6 @@ __all__ = [
     "GatewayProvider",
     "create_gateway_provider", 
     "gateway",
+    "OpenAICompatibleProvider",
+    "create_openai_compatible",
 ]
