@@ -17,6 +17,10 @@ __version__ = "0.1.0"
 
 # Core functionality
 from .core.generate_text import generate_text, stream_text
+from .core.generate_object import generate_object, stream_object, GenerateObjectResult, StreamObjectResult
+
+# Tools
+from .tools import Tool, ToolCall, ToolResult, tool, simple_tool, ToolRegistry
 
 # Provider interfaces
 from .providers.base import Provider, LanguageModel, EmbeddingModel
@@ -31,6 +35,17 @@ __all__ = [
     # Core functions
     "generate_text",
     "stream_text",
+    "generate_object", 
+    "stream_object",
+    "GenerateObjectResult",
+    "StreamObjectResult",
+    # Tools
+    "Tool",
+    "ToolCall", 
+    "ToolResult",
+    "tool",
+    "simple_tool",
+    "ToolRegistry",
     # Provider interfaces  
     "Provider",
     "LanguageModel", 
