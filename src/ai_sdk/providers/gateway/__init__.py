@@ -10,9 +10,9 @@ from .types import (
     GatewayProviderSettings,
     GatewayLanguageModelEntry, 
     GatewayFetchMetadataResponse,
-    GatewayModelId,
     GatewayEmbeddingModelId
 )
+from .model_settings import GatewayModelId
 from .errors import (
     GatewayError,
     GatewayAuthenticationError,

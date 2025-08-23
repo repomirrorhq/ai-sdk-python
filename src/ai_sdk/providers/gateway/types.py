@@ -5,9 +5,9 @@ Type definitions for Gateway Provider
 from typing import Dict, List, Optional, Union, Callable, Any, Awaitable
 from pydantic import BaseModel, Field
 from typing_extensions import TypeAlias
+from .model_settings import GatewayModelId
 
 # Type aliases
-GatewayModelId: TypeAlias = str
 GatewayEmbeddingModelId: TypeAlias = str
 
 # HTTP types  
