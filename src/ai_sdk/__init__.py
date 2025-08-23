@@ -27,6 +27,10 @@ from .tools import Tool, ToolCall, ToolResult, tool, simple_tool, ToolRegistry
 from .providers.base import Provider, LanguageModel, EmbeddingModel
 from .providers.types import Message, Content, FinishReason
 
+# Providers
+from .providers.openai import create_openai
+from .providers.anthropic import create_anthropic
+
 # Errors
 from .errors import AISDKError, APIError, InvalidArgumentError
 
@@ -60,6 +64,9 @@ __all__ = [
     "Message",
     "Content",
     "FinishReason",
+    # Providers
+    "create_openai",
+    "create_anthropic",
     # Errors
     "AISDKError",
     "APIError", 

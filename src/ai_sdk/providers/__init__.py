@@ -20,6 +20,10 @@ from .types import (
     ProviderMetadata,
 )
 
+# Import available providers
+from .openai import OpenAIProvider, create_openai
+from .anthropic import AnthropicProvider, create_anthropic
+
 __all__ = [
     "Provider",
     "LanguageModel",
@@ -36,4 +40,9 @@ __all__ = [
     "Content",
     "Message",
     "ProviderMetadata",
+    # Providers
+    "OpenAIProvider",
+    "create_openai",
+    "AnthropicProvider", 
+    "create_anthropic",
 ]
