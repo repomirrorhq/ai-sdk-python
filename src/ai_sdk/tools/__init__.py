@@ -17,6 +17,20 @@ from .schema import (
     create_tool_schema,
     validate_tool_input,
 )
+from .enhanced import (
+    EnhancedTool,
+    StreamingCallbacks,
+    enhanced_tool,
+    pydantic_tool,
+    provider_defined_tool,
+    dynamic_enhanced_tool,
+)
+from .schema_enhanced import (
+    FlexibleSchema,
+    normalize_schema,
+    validate_schema_input,
+    create_pydantic_tool_schema,
+)
 
 __all__ = [
     # Core tool types and functions
@@ -28,6 +42,14 @@ __all__ = [
     "tool",
     "dynamic_tool",
     
+    # Enhanced tool system
+    "EnhancedTool",
+    "StreamingCallbacks",
+    "enhanced_tool",
+    "pydantic_tool",
+    "provider_defined_tool",
+    "dynamic_enhanced_tool",
+    
     # Tool execution
     "execute_tools",
     "execute_tool_call",
@@ -35,4 +57,8 @@ __all__ = [
     # Schema utilities
     "create_tool_schema",
     "validate_tool_input",
+    "FlexibleSchema",
+    "normalize_schema",
+    "validate_schema_input",
+    "create_pydantic_tool_schema",
 ]
