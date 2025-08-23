@@ -46,6 +46,7 @@ from .cerebras import CerebrasProvider, create_cerebras_provider
 from .replicate import ReplicateProvider, create_replicate_provider
 from .gladia import GladiaProvider, create_gladia_provider
 from .luma import LumaProvider, create_luma_provider
+from .vercel import VercelProvider, create_vercel_provider
 
 __all__ = [
     "Provider",
@@ -113,4 +114,6 @@ __all__ = [
     "create_gladia_provider",
     "LumaProvider",
     "create_luma_provider",
+    "VercelProvider",
+    "create_vercel_provider",
 ]
