@@ -23,6 +23,7 @@ from .types import (
 # Import available providers
 from .openai import OpenAIProvider, create_openai
 from .anthropic import AnthropicProvider, create_anthropic
+from .google import GoogleProvider, create_google
 
 __all__ = [
     "Provider",
@@ -45,4 +46,6 @@ __all__ = [
     "create_openai",
     "AnthropicProvider", 
     "create_anthropic",
+    "GoogleProvider",
+    "create_google",
 ]

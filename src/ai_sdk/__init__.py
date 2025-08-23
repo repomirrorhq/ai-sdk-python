@@ -30,6 +30,7 @@ from .providers.types import Message, Content, FinishReason
 # Providers
 from .providers.openai import create_openai
 from .providers.anthropic import create_anthropic
+from .providers.google import create_google
 
 # Errors
 from .errors import AISDKError, APIError, InvalidArgumentError
@@ -67,6 +68,7 @@ __all__ = [
     # Providers
     "create_openai",
     "create_anthropic",
+    "create_google",
     # Errors
     "AISDKError",
     "APIError", 
