@@ -144,13 +144,27 @@ class BedrockProvider(Provider):
     
     async def embedding_model(self, model_id: BedrockEmbeddingModelId, **kwargs) -> EmbeddingModel:
         """Create a Bedrock embedding model."""
-        # TODO: Implement Bedrock embedding model
-        raise NotImplementedError("Bedrock embedding models not yet implemented")
+        from .embedding_model import BedrockEmbeddingModel
+        
+        return BedrockEmbeddingModel(
+            model_id=model_id,
+            auth=self.auth,
+            region=self.region,
+            base_url=self.base_url,
+            **kwargs
+        )
         
     async def image_model(self, model_id: BedrockImageModelId, **kwargs) -> ImageModel:
         """Create a Bedrock image model."""
-        # TODO: Implement Bedrock image model  
-        raise NotImplementedError("Bedrock image models not yet implemented")
+        from .image_model import BedrockImageModel
+        
+        return BedrockImageModel(
+            model_id=model_id,
+            auth=self.auth,
+            region=self.region,
+            base_url=self.base_url,
+            **kwargs
+        )
     
     async def close(self):
         """Close the HTTP client."""
