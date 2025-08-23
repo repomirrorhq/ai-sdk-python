@@ -57,6 +57,20 @@ from .adapters import langchain_adapter, llamaindex_adapter
 from .adapters.langchain import to_ui_message_stream as langchain_to_ui_stream
 from .adapters.llamaindex import to_ui_message_stream as llamaindex_to_ui_stream
 
+# Testing utilities (for development and testing)
+from .testing import (
+    MockProvider,
+    MockLanguageModel,
+    MockEmbeddingModel,
+    MockImageModel,
+    MockSpeechModel, 
+    MockTranscriptionModel,
+    simulate_readable_stream,
+    create_test_messages,
+    assert_generation_result,
+    ResponseBuilder,
+)
+
 # Provider interfaces
 from .providers.base import Provider, LanguageModel, EmbeddingModel, ImageModel, SpeechModel, TranscriptionModel
 from .providers.types import Message, Content, FinishReason
@@ -175,6 +189,17 @@ __all__ = [
     "llamaindex_adapter", 
     "langchain_to_ui_stream",
     "llamaindex_to_ui_stream",
+    # Testing utilities
+    "MockProvider",
+    "MockLanguageModel",
+    "MockEmbeddingModel", 
+    "MockImageModel",
+    "MockSpeechModel",
+    "MockTranscriptionModel",
+    "simulate_readable_stream",
+    "create_test_messages",
+    "assert_generation_result",
+    "ResponseBuilder",
     # Provider interfaces  
     "Provider",
     "LanguageModel", 
