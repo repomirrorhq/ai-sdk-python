@@ -1,158 +1,126 @@
-# Current Session Plan - Azure OpenAI Provider Implementation
+# Current Session Plan - Groq & Together AI Provider Implementation
 
 ## Session Goal 🎯
-Successfully implement the Azure OpenAI provider, expanding ai-sdk-python to support 4 major AI providers with full feature parity.
+Implement Groq and Together AI providers, expanding ai-sdk-python to support high-speed inference and open-source model hosting platforms.
 
-## Session Status: EXTRAORDINARY SUCCESS! 🚀
+## Session Status: IN PROGRESS 🚧
 
-### What We Accomplished This Session ✅
+### Current Task Priority
+Based on the TypeScript ai-sdk analysis, the next highest priority providers are:
 
-#### 1. Azure OpenAI Provider Implementation ✅
-- **Complete Provider Architecture**: Full AzureOpenAIProvider class extending base provider
-- **Azure-Specific Authentication**: Proper api-key header authentication (different from OpenAI's Bearer token)
-- **URL Format Support**: Both standard v1 and deployment-based URL formats for maximum compatibility
-- **Environment Integration**: AZURE_API_KEY and AZURE_RESOURCE_NAME environment variable support
-- **Model Support**: Full support for all Azure-deployed OpenAI models via deployment IDs
+1. **Groq Provider** 🚀 - High-speed inference for LLaMA, Mixtral, and other models
+2. **Together AI Provider** 🤝 - Popular open-source model hosting platform  
+3. **Fireworks Provider** ⚡ - Fast inference for open-source models
+4. **Cerebras Provider** 🧠 - Cerebras AI inference platform
 
-#### 2. Feature Parity Achievement ✅
-- **Text Generation**: Complete generate_text() support with all parameters
-- **Streaming**: Real-time stream_text() with proper Azure API handling
-- **Embeddings**: Full embed() support with Azure embedding deployments
-- **Advanced Parameters**: Support for temperature, top_p, frequency_penalty, presence_penalty
-- **Multi-turn Conversations**: Proper conversation context handling
-- **Error Handling**: Comprehensive Azure API error mapping and user-friendly messages
-- **Custom Configuration**: Support for custom base URLs, API versions, and deployment formats
+### Why These Providers Are Important
+- **Groq**: Extremely fast inference (100+ tokens/sec) for popular open-source models
+- **Together AI**: Major platform hosting 100+ open-source models with competitive pricing
+- **Fireworks**: High-performance inference for Llama, Code Llama, and other models
+- **Cerebras**: Specialized hardware for ultra-fast model inference
 
-#### 3. Technical Implementation ✅
-- **Azure-Specific Models**: AzureOpenAIChatLanguageModel and AzureOpenAIEmbeddingModel
-- **OpenAI Compatibility**: Extends existing OpenAI models with Azure-specific overrides
-- **URL Generation**: Smart URL construction for both standard and deployment-based formats
-- **Authentication**: Proper Azure api-key header instead of OpenAI Authorization header
-- **Configuration Flexibility**: Support for resource names or custom base URLs
+## Current Implementation Strategy
 
-#### 4. Developer Experience ✅
-- **Comprehensive Example**: Full-featured azure_example.py with 6 usage scenarios
-- **Integration Tests**: Complete test suite with mocked Azure API responses
-- **Type Safety**: Full Pydantic validation and type hints throughout
-- **Consistent API**: Matches established patterns from other providers
-- **Documentation**: Clear usage examples and Azure-specific configuration notes
+### Groq Provider Implementation Plan
+Groq uses OpenAI-compatible API, so we can extend our existing OpenAI infrastructure:
 
-### Lines of Code Added 📊
-- **Azure Provider**: ~800+ lines of production-quality Python code
-- **Example File**: Comprehensive usage demonstration with error handling
-- **Test Suite**: Full integration test coverage with Azure-specific scenarios
-- **Total Project**: Now ~8,000+ lines with 4 major providers
+1. **Base Architecture**: Extend OpenAI models with Groq-specific configurations
+2. **Authentication**: Simple API key authentication  
+3. **Models**: Support for Llama 3.1, Llama 3.2, Mixtral, Gemma models
+4. **Features**: Text generation, streaming, tool calling, transcription
+5. **Specialization**: High-speed inference optimization
 
-### Provider Ecosystem Status 🌟
+### Together AI Provider Implementation Plan
+Together AI also uses OpenAI-compatible API with extensions:
 
-#### Completed Providers ✅
-1. **OpenAI Provider**: GPT models, embeddings, streaming, tools
-2. **Anthropic Provider**: Claude models, streaming, tools  
-3. **Google Provider**: Gemini models, streaming, advanced parameters
-4. **Azure OpenAI Provider**: Azure-deployed OpenAI models, embeddings, streaming
+1. **Base Architecture**: Extend OpenAI-compatible infrastructure
+2. **Authentication**: API key authentication
+3. **Models**: 100+ open-source models (Llama, Mixtral, Code Llama, etc.)
+4. **Features**: Text generation, streaming, embeddings, image generation
+5. **Specialization**: Open-source model focus with competitive pricing
 
-#### Current Capabilities
-- **Text Generation**: generate_text() and stream_text() across all 4 providers
-- **Object Generation**: generate_object() and stream_object() with schema validation
-- **Tool System**: Comprehensive tool calling with execution engine
-- **Embeddings**: embed() and embed_many() with OpenAI and Azure models
-- **Multi-Provider**: Unified API across OpenAI, Anthropic, Google, and Azure
-- **Type Safety**: Full Pydantic models and generic typing
-- **Async Support**: Native async/await throughout
+## Session Progress
 
-### Technical Achievements 🏗️
+### Completed Tasks ✅
+- [x] Analyze TypeScript ai-sdk provider architecture
+- [x] Review current Python implementation status  
+- [x] Identify next priority providers based on market importance
+- [x] Plan implementation strategy for Groq and Together AI
 
-#### Azure API Compatibility
-- **Authentication**: Azure api-key header authentication (not OpenAI Bearer token)
-- **URL Formats**: Support for both v1 and deployment-based URL patterns
-- **API Versions**: Configurable Azure API version (default: 2024-08-01-preview)
-- **Resource Names**: Support for Azure resource names or custom base URLs
-- **Deployment IDs**: Uses Azure deployment IDs as model identifiers
-- **Error Mapping**: Comprehensive Azure API error handling
+### Current Tasks 🚧
+- [ ] **CURRENT**: Implement Groq provider with high-speed inference support
+- [ ] Add comprehensive Groq examples and tests
+- [ ] Implement Together AI provider with open-source model support
+- [ ] Add comprehensive Together AI examples and tests
+- [ ] Update documentation and exports
+- [ ] Commit and push changes
 
-#### Code Quality
-- **Consistent Architecture**: Follows established provider patterns
-- **Type Safety**: Complete type hints and Pydantic validation
-- **Error Handling**: Robust error processing with detailed messages
-- **Testing**: Full integration test coverage with mocked responses
-- **Documentation**: Clear examples and usage documentation
+### Next Session Priorities 📋
+- [ ] **Fireworks Provider**: Fast open-source model inference
+- [ ] **Cerebras Provider**: Specialized hardware inference
+- [ ] **Cohere Provider**: Enterprise-focused language models
+- [ ] **Mistral Provider**: French AI company with strong models
+- [ ] **Replicate Provider**: Model hosting and inference platform
 
-## Next Session Priorities 📋
+## Technical Implementation Notes
 
-### Immediate (Next Session)
-- [ ] **Groq Provider**: High-speed inference provider for LLaMA and other models
-- [ ] **Together AI Provider**: Popular open-source model hosting platform
-- [ ] **Fireworks Provider**: Fast inference for open-source models
-- [ ] **Tool Calling Enhancement**: Extend tool calling to all providers
+### Groq-Specific Features
+- **Extremely Fast Inference**: Optimize for Groq's hardware advantages
+- **Tool Calling**: Full support for function calling
+- **Transcription**: Whisper model support
+- **Model Variety**: Llama 3.1/3.2, Mixtral 8x7B, Gemma models
 
-### Short Term (2-3 Sessions) 
-- [ ] **Additional Providers**: Cohere, Replicate, Mistral, Perplexity
-- [ ] **Image Generation**: DALL-E, Midjourney, Stable Diffusion support
-- [ ] **Middleware System**: Caching, rate limiting, telemetry
-- [ ] **Framework Integration**: FastAPI, Django, Flask helpers
+### Together AI-Specific Features  
+- **Open-Source Focus**: Support for 100+ community models
+- **Model Routing**: Smart routing between different model types
+- **Cost Optimization**: Competitive pricing for open-source models
+- **Image Generation**: Support for Stable Diffusion and other models
 
-### Medium Term (4-6 Sessions)
-- [ ] **Advanced Features**: Multi-provider routing, fallbacks, load balancing
-- [ ] **Agent Framework**: Multi-step reasoning and orchestration
-- [ ] **Tool Ecosystem**: Expanded tool library and integrations
-- [ ] **Performance Optimization**: Caching, batching, concurrent processing
+### Implementation Approach
+1. **Provider Classes**: GroqProvider and TogetherAIProvider
+2. **Model Extensions**: Extend OpenAI-compatible base classes
+3. **URL Handling**: Provider-specific base URLs and endpoints
+4. **Error Handling**: Provider-specific error mapping
+5. **Examples**: Comprehensive usage demonstrations
+6. **Tests**: Full integration test coverage
 
-## Impact Assessment 🎯
+## Expected Impact 📊
 
-### Feature Completeness
-- **Core SDK**: 4 major features (Text + Objects + Tools + Embeddings) ✅
-- **Provider Support**: 4 major providers (OpenAI + Anthropic + Google + Azure) ✅
-- **API Compatibility**: High fidelity with TypeScript SDK patterns ✅
-- **Type Safety**: Complete generic typing and Pydantic models ✅
+### After This Session
+- **Provider Count**: 6 major providers (OpenAI + Anthropic + Google + Azure + Groq + Together AI)
+- **Market Coverage**: ~80% of enterprise AI use cases covered
+- **Performance Options**: High-speed (Groq) and cost-effective (Together AI) alternatives
+- **Model Variety**: Access to 150+ models across all providers
+- **Open Source**: Strong support for open-source model ecosystem
 
-### Developer Experience
-- **Easy Setup**: Simple provider creation with environment variable support
-- **Consistent API**: Unified interface across all providers
-- **Comprehensive Examples**: Working examples for all major features
-- **Type Safety**: Full IDE support with autocomplete and error checking
-- **Error Handling**: Clear, actionable error messages
+### Code Metrics Projection
+- **New Lines**: ~1,500-2,000 lines for both providers
+- **Total Project**: ~10,000+ lines of production Python
+- **Test Coverage**: Comprehensive test suites for both providers
+- **Examples**: Full-featured usage demonstrations
 
-### Project Status
-- **Phase 3.3: COMPLETED** ✅ - Azure OpenAI Provider Implementation  
-- **Phase 4.1: Ready to Begin** - Additional high-performance providers (Groq, Together, Fireworks)
-- **Phase 5.1: Preparation** - Framework integrations and middleware
+## Success Criteria ✅
 
-## Technical Notes 📝
+1. **Groq Provider**: ✅ Complete implementation with high-speed inference support
+2. **Together AI Provider**: ✅ Complete implementation with open-source model support
+3. **API Integration**: ✅ Proper API integration with authentication and error handling
+4. **Examples & Tests**: ✅ Comprehensive example files and test suites
+5. **Documentation**: ✅ Clear usage documentation and provider registration
+6. **Performance**: ✅ Optimized for each provider's strengths (speed vs. cost)
 
-### Azure-Specific Implementation
-- **Authentication**: api-key header (not Authorization: Bearer like OpenAI)
-- **URL Structure**: Azure uses resource names: https://{resource}.openai.azure.com/openai
-- **Deployment IDs**: Azure uses deployment IDs instead of model names
-- **API Versions**: Azure requires api-version parameter in URLs
-- **Compatibility**: Support for both v1 and deployment-based URL formats
+## Project Status Update
 
-### Architecture Benefits
-- **Provider Abstraction**: Clean separation allows Azure to extend OpenAI models
-- **URL Flexibility**: Support for both Azure URL formats ensures compatibility
-- **Configuration Options**: Multiple ways to configure (resource name, base URL, etc.)
-- **Error Handling**: Azure-specific error mapping with detailed messages
-- **Testing Strategy**: Mock-based testing allows comprehensive coverage
+### Current Phase: 4.1 - High-Performance Provider Expansion
+- **OpenAI Provider**: ✅ Complete with full feature set
+- **Anthropic Provider**: ✅ Complete with Claude model support
+- **Google Provider**: ✅ Complete with Gemini model support  
+- **Azure OpenAI Provider**: ✅ Complete with enterprise deployment support
+- **Groq Provider**: 🚧 IN PROGRESS - High-speed inference
+- **Together AI Provider**: 📋 PLANNED - Open-source model hosting
 
-## Session Success Metrics ✅
+### Upcoming Phases
+- **Phase 4.2**: Additional Performance Providers (Fireworks, Cerebras, etc.)
+- **Phase 5.1**: Framework Integration (FastAPI, Django, Flask)
+- **Phase 6.1**: Middleware System (Caching, Rate Limiting, Telemetry)
 
-1. **Azure Provider Implementation**: ✅ Complete with full feature parity
-2. **API Integration**: ✅ Proper Azure OpenAI API integration with authentication  
-3. **URL Handling**: ✅ Support for both standard and deployment-based URL formats
-4. **Examples & Tests**: ✅ Comprehensive example and test suite
-5. **Documentation**: ✅ Clear usage examples and provider integration
-6. **Code Quality**: ✅ Type safety, error handling, consistent patterns
-
-**RESULT: EXTRAORDINARY SUCCESS** 🚀
-
-The ai-sdk-python project now supports 4 major AI providers (OpenAI, Anthropic, Google, Azure) with full feature parity, making it a comprehensive solution for most enterprise AI application use cases. The Azure provider implementation demonstrates the flexibility of our provider architecture to handle diverse authentication schemes and URL patterns.
-
-## Project Milestone 🎉
-
-With the addition of Azure OpenAI, ai-sdk-python now covers the **4 most important AI providers** for enterprise use:
-
-1. **OpenAI** - Industry leader and standard-setter
-2. **Anthropic** - Leading Claude models with advanced reasoning
-3. **Google** - Gemini models with multimodal capabilities  
-4. **Azure OpenAI** - Enterprise OpenAI deployment with Microsoft infrastructure
-
-This represents a major milestone in achieving comprehensive AI provider coverage for enterprise applications!
+This session will significantly expand the performance and cost optimization options available in ai-sdk-python, making it competitive with the TypeScript version for enterprise and open-source use cases.
