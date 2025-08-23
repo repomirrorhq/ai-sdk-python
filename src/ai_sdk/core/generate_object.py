@@ -2,7 +2,8 @@
 
 import asyncio
 import json
-from typing import Any, Dict, List, Optional, TypeVar, Union, Generic, Type
+import re
+from typing import Any, Dict, List, Optional, TypeVar, Union, Generic, Type, AsyncGenerator
 
 from pydantic import BaseModel, ValidationError
 
@@ -15,9 +16,79 @@ from ..providers.types import (
     ToolDefinition,
     Content,
 )
-from .generate_text import generate_text, GenerateTextResult
+from .generate_text import generate_text, stream_text, GenerateTextResult
 
 T = TypeVar("T", bound=BaseModel)
+
+
+class ObjectStreamPart(BaseModel):
+    """A part of the object stream."""
+
+    type: str
+    """Type of the stream part."""
+
+
+class ObjectPart(ObjectStreamPart):
+    """A partial object in the stream."""
+
+    type: str = "object"
+    object: Dict[str, Any]
+    """The partial object data."""
+
+
+class TextDeltaPart(ObjectStreamPart):
+    """A text delta in the stream."""
+
+    type: str = "text-delta"
+    text_delta: str
+    """The text delta."""
+
+
+class FinishPart(ObjectStreamPart):
+    """The finish part of the stream."""
+
+    type: str = "finish"
+    finish_reason: FinishReason
+    """The reason why generation finished."""
+
+    usage: Usage
+    """Token usage information."""
+
+
+class ErrorPart(ObjectStreamPart):
+    """An error part of the stream."""
+
+    type: str = "error"
+    error: str
+    """The error message."""
+
+
+class StreamObjectResult(BaseModel, Generic[T]):
+    """Result of a stream_object call."""
+
+    object: T
+    """The final generated object (available after stream completes)."""
+
+    finish_reason: FinishReason
+    """The reason why generation finished."""
+
+    usage: Usage
+    """Token usage information."""
+
+    provider_metadata: Optional[Dict[str, Any]] = None
+    """Additional provider-specific metadata."""
+
+    request_metadata: Optional[Dict[str, Any]] = None
+    """Additional request metadata."""
+
+    response_metadata: Optional[Dict[str, Any]] = None
+    """Additional response metadata."""
+
+    partial_objects: List[Dict[str, Any]]
+    """List of partial objects that were streamed."""
+
+    text_deltas: List[str]
+    """List of text deltas that were streamed."""
 
 
 class GenerateObjectResult(BaseModel, Generic[T]):
@@ -310,6 +381,336 @@ def _extract_json(text: str) -> Optional[str]:
     return None
 
 
+async def stream_object(
+    model: LanguageModel,
+    *,
+    schema: Type[T],
+    prompt: Optional[str] = None,
+    messages: Optional[List[Message]] = None,
+    system: Optional[str] = None,
+    schema_name: Optional[str] = None,
+    schema_description: Optional[str] = None,
+    mode: str = "json",
+    max_tokens: Optional[int] = None,
+    temperature: Optional[float] = None,
+    top_p: Optional[float] = None,
+    top_k: Optional[int] = None,
+    frequency_penalty: Optional[float] = None,
+    presence_penalty: Optional[float] = None,
+    stop_sequences: Optional[List[str]] = None,
+    seed: Optional[int] = None,
+    max_retries: int = 2,
+    tools: Optional[List[ToolDefinition]] = None,
+    tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    extra_body: Optional[Dict[str, Any]] = None,
+) -> AsyncGenerator[ObjectStreamPart, None]:
+    """Stream a structured, typed object for a given prompt and schema using a language model.
+
+    This function streams partial objects as they are being generated. For non-streaming generation, use `generate_object` instead.
+
+    Args:
+        model: The language model to use.
+        schema: The Pydantic model class that defines the structure of the object to generate.
+        prompt: A simple text prompt. You can either use `prompt` or `messages` but not both.
+        messages: A list of messages. You can either use `prompt` or `messages` but not both.
+        system: A system message that will be part of the prompt.
+        schema_name: Optional name of the output that should be generated.
+        schema_description: Optional description of the output that should be generated.
+        mode: The mode to use for object generation ('json', 'tool', or 'auto').
+        max_tokens: Maximum number of tokens to generate.
+        temperature: Temperature setting (0.0 to 2.0).
+        top_p: Nucleus sampling parameter (0.0 to 1.0).
+        top_k: Top-k sampling parameter.
+        frequency_penalty: Frequency penalty setting.
+        presence_penalty: Presence penalty setting.
+        stop_sequences: Stop sequences to end generation.
+        seed: Random seed for deterministic generation.
+        max_retries: Maximum number of retries on failure.
+        tools: Tools available to the model.
+        tool_choice: How the model should choose tools.
+        headers: Additional HTTP headers.
+        extra_body: Additional request body parameters.
+
+    Yields:
+        ObjectStreamPart: Stream parts containing partial objects, text deltas, or finish/error events.
+
+    Raises:
+        AISDKError: If object generation fails.
+        NoObjectGeneratedError: If no valid object could be generated.
+        ValidationError: If the final object doesn't match the schema.
+    """
+    # Validate input
+    if prompt is not None and messages is not None:
+        raise AISDKError("Cannot specify both 'prompt' and 'messages'")
+    if prompt is None and messages is None:
+        raise AISDKError("Must specify either 'prompt' or 'messages'")
+
+    # Generate JSON schema from Pydantic model
+    json_schema = schema.model_json_schema()
+    schema_name = schema_name or schema.__name__
+    schema_description = schema_description or schema.__doc__ or f"Generate a {schema_name}"
+
+    # Prepare the prompt for JSON generation
+    if mode == "json":
+        json_instruction = f"""You must respond with valid JSON that matches this schema:
+{json.dumps(json_schema, indent=2)}
+
+The response must be a valid JSON object that can be parsed and validated against the schema.
+Only return the JSON object, no additional text or formatting."""
+
+        if prompt:
+            final_prompt = f"{prompt}\n\n{json_instruction}"
+        else:
+            # Add instruction to last user message
+            final_messages = messages.copy() if messages else []
+            if final_messages and final_messages[-1].role == "user":
+                final_messages[-1] = Message(
+                    role="user",
+                    content=f"{final_messages[-1].content}\n\n{json_instruction}",
+                )
+            else:
+                final_messages.append(Message(role="user", content=json_instruction))
+            messages = final_messages
+            prompt = None
+
+    elif mode == "tool":
+        # TODO: Implement tool-based object generation
+        raise AISDKError("Tool mode is not yet implemented")
+    elif mode == "auto":
+        # For now, default to JSON mode
+        mode = "json"
+        async for part in stream_object(
+            model=model,
+            schema=schema,
+            prompt=prompt,
+            messages=messages,
+            system=system,
+            schema_name=schema_name,
+            schema_description=schema_description,
+            mode="json",
+            max_tokens=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            top_k=top_k,
+            frequency_penalty=frequency_penalty,
+            presence_penalty=presence_penalty,
+            stop_sequences=stop_sequences,
+            seed=seed,
+            max_retries=max_retries,
+            tools=tools,
+            tool_choice=tool_choice,
+            headers=headers,
+            extra_body=extra_body,
+        ):
+            yield part
+        return
+
+    # Stream text and parse JSON incrementally
+    accumulated_text = ""
+    current_partial = {}
+    
+    try:
+        async for text_part in stream_text(
+            model=model,
+            prompt=final_prompt if prompt else None,
+            messages=messages,
+            system=system,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            top_k=top_k,
+            frequency_penalty=frequency_penalty,
+            presence_penalty=presence_penalty,
+            stop=stop_sequences,
+            seed=seed,
+            max_retries=max_retries,
+            tools=tools,
+            tool_choice=tool_choice,
+            headers=headers,
+            extra_body=extra_body,
+        ):
+            if hasattr(text_part, 'delta'):
+                delta = text_part.delta
+                accumulated_text += delta
+                
+                # Yield text delta
+                yield TextDeltaPart(text_delta=delta)
+                
+                # Try to parse partial JSON
+                partial_object = _parse_partial_json(accumulated_text)
+                if partial_object is not None and partial_object != current_partial:
+                    current_partial = partial_object
+                    yield ObjectPart(object=partial_object)
+            
+            elif hasattr(text_part, 'finish_reason'):
+                # Final parsing and validation
+                json_text = _extract_json(accumulated_text)
+                
+                if not json_text:
+                    yield ErrorPart(error=f"No valid JSON found in response: {accumulated_text[:200]}...")
+                    return
+                
+                try:
+                    final_json = json.loads(json_text)
+                    validated_object = schema.model_validate(final_json)
+                    
+                    # Yield final object if different from last partial
+                    if final_json != current_partial:
+                        yield ObjectPart(object=final_json)
+                    
+                    # Yield finish event
+                    yield FinishPart(
+                        finish_reason=text_part.finish_reason,
+                        usage=text_part.usage if hasattr(text_part, 'usage') else Usage(
+                            prompt_tokens=0,
+                            completion_tokens=0,
+                            total_tokens=0
+                        )
+                    )
+                    
+                except (json.JSONDecodeError, ValidationError) as e:
+                    yield ErrorPart(error=f"Failed to parse or validate final object: {e}")
+                    
+    except Exception as e:
+        yield ErrorPart(error=f"Failed to stream object: {e}")
+
+
+async def collect_stream_object(
+    model: LanguageModel,
+    *,
+    schema: Type[T],
+    **kwargs: Any,
+) -> StreamObjectResult[T]:
+    """Collect a complete StreamObjectResult from stream_object.
+    
+    This is a convenience function that collects all stream parts and returns
+    the final result with all partial objects and text deltas.
+    
+    Args:
+        model: The language model to use.
+        schema: The Pydantic model class.
+        **kwargs: Additional arguments passed to stream_object.
+        
+    Returns:
+        StreamObjectResult with the final object and all stream data.
+        
+    Raises:
+        AISDKError: If streaming fails.
+        NoObjectGeneratedError: If no valid object could be generated.
+    """
+    partial_objects = []
+    text_deltas = []
+    final_object = None
+    finish_reason = None
+    usage = None
+    error = None
+    
+    async for part in stream_object(model=model, schema=schema, **kwargs):
+        if part.type == "object":
+            partial_objects.append(part.object)
+        elif part.type == "text-delta":
+            text_deltas.append(part.text_delta)
+        elif part.type == "finish":
+            finish_reason = part.finish_reason
+            usage = part.usage
+            # Get the final object from the last partial
+            if partial_objects:
+                try:
+                    final_object = schema.model_validate(partial_objects[-1])
+                except ValidationError as e:
+                    error = f"Final object validation failed: {e}"
+        elif part.type == "error":
+            error = part.error
+    
+    if error:
+        raise AISDKError(error)
+    
+    if final_object is None:
+        raise NoObjectGeneratedError("No valid object was generated from stream")
+    
+    return StreamObjectResult[T](
+        object=final_object,
+        finish_reason=finish_reason or "unknown",
+        usage=usage or Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0),
+        partial_objects=partial_objects,
+        text_deltas=text_deltas,
+    )
+
+
+def _parse_partial_json(text: str) -> Optional[Dict[str, Any]]:
+    """Parse partial JSON, returning the most complete valid object possible."""
+    # Clean the text first
+    text = text.strip()
+    
+    # Look for JSON start
+    start_idx = text.find('{')
+    if start_idx == -1:
+        return None
+    
+    text = text[start_idx:]
+    
+    # Try to parse the text as-is first
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    
+    # Try to find a valid partial JSON by closing braces/quotes
+    # This is a simplified approach - a full implementation would be more sophisticated
+    
+    # Count braces to try to balance them
+    open_braces = 0
+    open_quotes = False
+    escape_next = False
+    valid_end = -1
+    
+    for i, char in enumerate(text):
+        if escape_next:
+            escape_next = False
+            continue
+            
+        if char == '\\':
+            escape_next = True
+            continue
+            
+        if not open_quotes:
+            if char == '{':
+                open_braces += 1
+            elif char == '}':
+                open_braces -= 1
+                if open_braces == 0:
+                    valid_end = i + 1
+                    break
+        
+        if char == '"' and not escape_next:
+            open_quotes = not open_quotes
+    
+    # Try parsing up to the valid end point
+    if valid_end > 0:
+        try:
+            return json.loads(text[:valid_end])
+        except json.JSONDecodeError:
+            pass
+    
+    # Try adding closing braces if we have unmatched opens
+    if open_braces > 0:
+        # Close any open quotes first
+        partial_text = text
+        if open_quotes:
+            partial_text += '"'
+        
+        # Add closing braces
+        partial_text += '}' * open_braces
+        
+        try:
+            return json.loads(partial_text)
+        except json.JSONDecodeError:
+            pass
+    
+    return None
+
+
 # Convenience function for synchronous usage
 def generate_object_sync(
     model: LanguageModel,
@@ -319,3 +720,13 @@ def generate_object_sync(
 ) -> GenerateObjectResult[T]:
     """Synchronous wrapper for generate_object."""
     return asyncio.run(generate_object(model, schema=schema, **kwargs))
+
+
+def stream_object_sync(
+    model: LanguageModel,
+    *,
+    schema: Type[T],
+    **kwargs: Any,
+) -> StreamObjectResult[T]:
+    """Synchronous wrapper for stream_object that collects the full result."""
+    return asyncio.run(collect_stream_object(model, schema=schema, **kwargs))
