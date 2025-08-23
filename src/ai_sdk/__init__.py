@@ -75,6 +75,7 @@ from .providers.assemblyai import create_assemblyai
 from .providers.fal import create_fal
 from .providers.hume import create_hume
 from .providers.lmnt import create_lmnt
+from .providers.revai import create_revai
 
 # Errors
 from .errors import AISDKError, APIError, InvalidArgumentError
@@ -178,6 +179,7 @@ __all__ = [
     "create_fal",
     "create_hume",
     "create_lmnt",
+    "create_revai",
     # Errors
     "AISDKError",
     "APIError", 
