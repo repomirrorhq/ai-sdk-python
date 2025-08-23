@@ -134,7 +134,8 @@ async def generate_object(
     schema_name: Optional[str] = None,
     schema_description: Optional[str] = None,
     mode: str = "json",
-    max_tokens: Optional[int] = None,
+    max_output_tokens: Optional[int] = None,
+    max_tokens: Optional[int] = None,  # Deprecated, use max_output_tokens
     temperature: Optional[float] = None,
     top_p: Optional[float] = None,
     top_k: Optional[int] = None,
@@ -247,6 +248,12 @@ Only return the JSON object, no additional text or formatting."""
             **kwargs,
         )
 
+    # Handle parameter compatibility between max_tokens and max_output_tokens  
+    if max_output_tokens is not None and max_tokens is not None:
+        raise ValueError("Cannot specify both max_output_tokens and max_tokens. Use max_output_tokens (preferred).")
+    
+    resolved_max_tokens = max_output_tokens if max_output_tokens is not None else max_tokens
+
     # Generate text using the underlying generate_text function
     try:
         text_result = await generate_text(
@@ -254,7 +261,7 @@ Only return the JSON object, no additional text or formatting."""
             prompt=final_prompt if prompt else None,
             messages=messages,
             system=system,
-            max_tokens=max_tokens,
+            max_output_tokens=resolved_max_tokens,
             temperature=temperature,
             top_p=top_p,
             top_k=top_k,
@@ -391,7 +398,8 @@ async def stream_object(
     schema_name: Optional[str] = None,
     schema_description: Optional[str] = None,
     mode: str = "json",
-    max_tokens: Optional[int] = None,
+    max_output_tokens: Optional[int] = None,
+    max_tokens: Optional[int] = None,  # Deprecated, use max_output_tokens
     temperature: Optional[float] = None,
     top_p: Optional[float] = None,
     top_k: Optional[int] = None,
@@ -506,6 +514,12 @@ Only return the JSON object, no additional text or formatting."""
             yield part
         return
 
+    # Handle parameter compatibility between max_tokens and max_output_tokens  
+    if max_output_tokens is not None and max_tokens is not None:
+        raise ValueError("Cannot specify both max_output_tokens and max_tokens. Use max_output_tokens (preferred).")
+    
+    resolved_max_tokens = max_output_tokens if max_output_tokens is not None else max_tokens
+
     # Stream text and parse JSON incrementally
     accumulated_text = ""
     current_partial = {}
@@ -516,7 +530,7 @@ Only return the JSON object, no additional text or formatting."""
             prompt=final_prompt if prompt else None,
             messages=messages,
             system=system,
-            max_tokens=max_tokens,
+            max_output_tokens=resolved_max_tokens,
             temperature=temperature,
             top_p=top_p,
             top_k=top_k,

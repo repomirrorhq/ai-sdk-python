@@ -29,7 +29,8 @@ class GenerateTextOptions:
         system: Optional[str] = None,
         prompt: Optional[str] = None,
         messages: Optional[List[Message]] = None,
-        max_tokens: Optional[int] = None,
+        max_output_tokens: Optional[int] = None,
+        max_tokens: Optional[int] = None,  # Deprecated, use max_output_tokens
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         top_k: Optional[int] = None,
@@ -50,7 +51,8 @@ class GenerateTextOptions:
             system: System message
             prompt: Simple text prompt (mutually exclusive with messages)
             messages: List of messages (mutually exclusive with prompt)
-            max_tokens: Maximum number of tokens to generate
+            max_output_tokens: Maximum number of tokens to generate (preferred)
+            max_tokens: Maximum number of tokens to generate (deprecated, use max_output_tokens)
             temperature: Temperature setting (0.0 to 2.0)
             top_p: Nucleus sampling parameter (0.0 to 1.0)
             top_k: Top-k sampling parameter
@@ -63,12 +65,22 @@ class GenerateTextOptions:
             max_retries: Maximum number of retries
             headers: Additional HTTP headers
             extra_body: Additional request body parameters
+            
+        Raises:
+            InvalidArgumentError: If both max_output_tokens and max_tokens are specified
         """
         self.model = model
         self.system = system
         self.prompt = prompt
         self.messages = messages
-        self.max_tokens = max_tokens
+        
+        # Handle parameter compatibility between max_tokens and max_output_tokens
+        if max_output_tokens is not None and max_tokens is not None:
+            raise InvalidArgumentError(
+                "Cannot specify both max_output_tokens and max_tokens. Use max_output_tokens (preferred)."
+            )
+        
+        self.max_tokens = max_output_tokens if max_output_tokens is not None else max_tokens
         self.temperature = temperature
         self.top_p = top_p
         self.top_k = top_k
@@ -133,7 +145,8 @@ async def generate_text(
     system: Optional[str] = None,
     prompt: Optional[str] = None,
     messages: Optional[List[Message]] = None,
-    max_tokens: Optional[int] = None,
+    max_output_tokens: Optional[int] = None,
+    max_tokens: Optional[int] = None,  # Deprecated, use max_output_tokens
     temperature: Optional[float] = None,
     top_p: Optional[float] = None,
     top_k: Optional[int] = None,
@@ -154,7 +167,8 @@ async def generate_text(
         system: System message that will be part of the prompt
         prompt: Simple text prompt (mutually exclusive with messages)
         messages: List of messages (mutually exclusive with prompt)
-        max_tokens: Maximum number of tokens to generate
+        max_output_tokens: Maximum number of tokens to generate (preferred)
+        max_tokens: Maximum number of tokens to generate (deprecated, use max_output_tokens)
         temperature: Temperature setting for randomness (0.0 to 2.0)
         top_p: Nucleus sampling parameter (0.0 to 1.0)
         top_k: Top-k sampling parameter
@@ -182,6 +196,7 @@ async def generate_text(
         system=system,
         prompt=prompt,
         messages=messages,
+        max_output_tokens=max_output_tokens,
         max_tokens=max_tokens,
         temperature=temperature,
         top_p=top_p,
@@ -213,7 +228,8 @@ async def stream_text(
     system: Optional[str] = None,
     prompt: Optional[str] = None,
     messages: Optional[List[Message]] = None,
-    max_tokens: Optional[int] = None,
+    max_output_tokens: Optional[int] = None,
+    max_tokens: Optional[int] = None,  # Deprecated, use max_output_tokens
     temperature: Optional[float] = None,
     top_p: Optional[float] = None,
     top_k: Optional[int] = None,
@@ -244,6 +260,7 @@ async def stream_text(
         system=system,
         prompt=prompt,
         messages=messages,
+        max_output_tokens=max_output_tokens,
         max_tokens=max_tokens,
         temperature=temperature,
         top_p=top_p,
