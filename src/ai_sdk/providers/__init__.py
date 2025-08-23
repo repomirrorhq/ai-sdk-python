@@ -31,6 +31,7 @@ from .bedrock import BedrockProvider, create_bedrock
 from .mistral import MistralProvider, create_mistral
 from .cohere import CohereProvider, create_cohere_provider
 from .perplexity import PerplexityProvider, create_perplexity_provider
+from .deepseek import DeepSeekProvider, create_deepseek_provider
 
 __all__ = [
     "Provider",
@@ -69,4 +70,6 @@ __all__ = [
     "create_cohere_provider",
     "PerplexityProvider",
     "create_perplexity_provider",
+    "DeepSeekProvider",
+    "create_deepseek_provider",
 ]
