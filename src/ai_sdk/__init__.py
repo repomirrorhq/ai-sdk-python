@@ -67,6 +67,8 @@ from .providers.fireworks import create_fireworks_provider as create_fireworks
 from .providers.replicate import create_replicate_provider as create_replicate
 from .providers.elevenlabs import create_elevenlabs
 from .providers.deepgram import create_deepgram
+from .providers.assemblyai import create_assemblyai
+from .providers.fal import create_fal
 
 # Errors
 from .errors import AISDKError, APIError, InvalidArgumentError
@@ -151,6 +153,8 @@ __all__ = [
     "create_replicate",
     "create_elevenlabs",
     "create_deepgram",
+    "create_assemblyai",
+    "create_fal",
     # Errors
     "AISDKError",
     "APIError", 

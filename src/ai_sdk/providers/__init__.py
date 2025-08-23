@@ -37,6 +37,8 @@ from .xai import XAIProvider
 from .deepinfra import DeepInfraProvider, create_deepinfra_provider
 from .elevenlabs import ElevenLabsProvider, create_elevenlabs
 from .deepgram import DeepgramProvider, create_deepgram
+from .assemblyai import AssemblyAIProvider, create_assemblyai
+from .fal import FalProvider, create_fal
 
 __all__ = [
     "Provider",
@@ -86,4 +88,8 @@ __all__ = [
     "create_elevenlabs",
     "DeepgramProvider",
     "create_deepgram",
+    "AssemblyAIProvider",
+    "create_assemblyai",
+    "FalProvider",
+    "create_fal",
 ]
