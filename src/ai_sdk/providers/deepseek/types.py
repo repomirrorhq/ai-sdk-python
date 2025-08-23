@@ -8,8 +8,14 @@ from pydantic import BaseModel
 # DeepSeek Model IDs based on https://api-docs.deepseek.com/quick_start/pricing  
 DeepSeekChatModelId = Union[
     Literal[
-        "deepseek-chat",      # Standard chat model
-        "deepseek-reasoner",  # Advanced reasoning model
+        "deepseek-chat",           # Standard chat model
+        "deepseek-reasoner",       # Advanced reasoning model
+        "deepseek-v3",            # DeepSeek V3 model
+        "deepseek-v3.1",          # DeepSeek V3.1 model  
+        "deepseek-v3.1-base",     # DeepSeek V3.1 base model
+        "deepseek-v3.1-thinking", # DeepSeek V3.1 thinking model
+        "deepseek-r1",            # DeepSeek R1 reasoning model
+        "deepseek-r1-distill-llama-70b", # DeepSeek R1 distilled model
     ],
     str,  # Allow custom model IDs
 ]
