@@ -47,6 +47,7 @@ from .replicate import ReplicateProvider, create_replicate_provider
 from .gladia import GladiaProvider, create_gladia_provider
 from .luma import LumaProvider, create_luma_provider
 from .vercel import VercelProvider, create_vercel_provider
+from .gateway import GatewayProvider, create_gateway_provider, gateway
 
 __all__ = [
     "Provider",
@@ -116,4 +117,7 @@ __all__ = [
     "create_luma_provider",
     "VercelProvider",
     "create_vercel_provider",
+    "GatewayProvider",
+    "create_gateway_provider", 
+    "gateway",
 ]
