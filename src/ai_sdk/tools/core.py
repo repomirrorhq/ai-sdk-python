@@ -32,6 +32,9 @@ class ToolCallOptions(BaseModel):
 class ToolCall(BaseModel, Generic[T]):
     """A tool call made by the language model."""
 
+    type: str = "call"
+    """Type of the tool call."""
+
     tool_call_id: str
     """ID of the tool call."""
 
@@ -47,9 +50,18 @@ class ToolCall(BaseModel, Generic[T]):
     dynamic: bool = False
     """Whether the tool is dynamic."""
 
+    invalid: bool = False
+    """Whether the tool call is invalid."""
+
+    error: Optional[Exception] = None
+    """Error if the tool call is invalid."""
+
 
 class ToolResult(BaseModel, Generic[T]):
     """Result of a tool execution."""
+
+    type: str  # "result" or "error"
+    """Type of the result."""
 
     tool_call_id: str
     """ID of the tool call."""
@@ -60,20 +72,17 @@ class ToolResult(BaseModel, Generic[T]):
     input: Any
     """Arguments that were passed to the tool."""
 
-    output: T
-    """Result of the tool execution."""
+    output: Optional[T] = None
+    """Result of the tool execution (if type is "result")."""
+
+    error: Optional[str] = None
+    """Error message (if type is "error")."""
 
     provider_executed: bool = False
     """Whether the tool was executed by the provider."""
 
     dynamic: bool = False
     """Whether the tool is dynamic."""
-
-    is_error: bool = False
-    """Whether the result represents an error."""
-
-    error: Optional[str] = None
-    """Error message if the execution failed."""
 
 
 # Tool execute function type
