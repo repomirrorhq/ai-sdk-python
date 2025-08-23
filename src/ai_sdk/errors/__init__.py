@@ -10,6 +10,7 @@ from .base import (
     AuthenticationError,
     ModelNotFoundError,
     ContentFilterError,
+    NoObjectGeneratedError,
 )
 
 __all__ = [
@@ -22,4 +23,5 @@ __all__ = [
     "AuthenticationError",
     "ModelNotFoundError",
     "ContentFilterError",
+    "NoObjectGeneratedError",
 ]

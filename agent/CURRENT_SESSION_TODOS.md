@@ -44,13 +44,18 @@ Successfully started the ai-sdk-python project with complete foundation and core
 - Integration tests and error condition testing
 - Clear usage examples
 
-## Next Steps for Future Sessions
+## Next Steps for Current Session
 
-### Immediate (Next Session)
-- [ ] Implement stream_text() streaming response handling
-- [ ] Add tool calling execution logic
-- [ ] Create generate_object() function with schema validation
+### Top Priority
+- [ ] Implement generate_object() function with Pydantic schema validation
+- [ ] Add stream_object() function  
+- [ ] Port tool calling execution logic from TypeScript
 - [ ] Add embedding support (embed() and embed_many())
+
+### Secondary Priority  
+- [ ] Fix and complete stream_text() streaming response handling
+- [ ] Add comprehensive tests for new functionality
+- [ ] Create more usage examples
 
 ### Short Term (2-3 Sessions)
 - [ ] Implement Anthropic provider (Claude models)

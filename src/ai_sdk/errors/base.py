@@ -214,3 +214,30 @@ class ContentFilterError(APIError):
         super().__init__(message, **kwargs)
         self.filter_type = filter_type
         self.metadata["filter_type"] = filter_type
+
+
+class NoObjectGeneratedError(AISDKError):
+    """Error for when no valid object could be generated."""
+    
+    def __init__(
+        self,
+        message: str = "No valid object was generated",
+        response_text: Optional[str] = None,
+        schema_name: Optional[str] = None,
+    ) -> None:
+        """Initialize the no object generated error.
+        
+        Args:
+            message: Error message
+            response_text: The response text that failed to generate an object
+            schema_name: Name of the schema that was expected
+        """
+        super().__init__(
+            message,
+            metadata={
+                "response_text": response_text,
+                "schema_name": schema_name,
+            },
+        )
+        self.response_text = response_text
+        self.schema_name = schema_name
