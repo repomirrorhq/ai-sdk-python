@@ -15,6 +15,12 @@ from .generate_object import (
     FinishPart,
     ErrorPart,
 )
+from .generate_image import (
+    generate_image,
+    generate_image_sync,
+    GenerateImageResult,
+    NoImageGeneratedError,
+)
 
 __all__ = [
     "generate_text",
@@ -31,4 +37,8 @@ __all__ = [
     "TextDeltaPart",
     "FinishPart",
     "ErrorPart",
+    "generate_image",
+    "generate_image_sync", 
+    "GenerateImageResult",
+    "NoImageGeneratedError",
 ]

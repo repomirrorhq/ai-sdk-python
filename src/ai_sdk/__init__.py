@@ -18,13 +18,14 @@ __version__ = "0.1.0"
 # Core functionality
 from .core.generate_text import generate_text, stream_text
 from .core.generate_object import generate_object, stream_object, GenerateObjectResult, StreamObjectResult
+from .core.generate_image import generate_image, generate_image_sync, GenerateImageResult, NoImageGeneratedError
 from .core.embed import embed, embed_many, EmbedResult, EmbedManyResult, EmbeddingUsage, cosine_similarity
 
 # Tools
 from .tools import Tool, ToolCall, ToolResult, tool, simple_tool, ToolRegistry
 
 # Provider interfaces
-from .providers.base import Provider, LanguageModel, EmbeddingModel
+from .providers.base import Provider, LanguageModel, EmbeddingModel, ImageModel
 from .providers.types import Message, Content, FinishReason
 
 # Providers
@@ -48,6 +49,10 @@ __all__ = [
     "stream_object",
     "GenerateObjectResult",
     "StreamObjectResult",
+    "generate_image",
+    "generate_image_sync",
+    "GenerateImageResult",
+    "NoImageGeneratedError",
     "embed",
     "embed_many",
     "EmbedResult",
@@ -65,6 +70,7 @@ __all__ = [
     "Provider",
     "LanguageModel", 
     "EmbeddingModel",
+    "ImageModel",
     "Message",
     "Content",
     "FinishReason",

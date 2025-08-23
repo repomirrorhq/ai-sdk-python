@@ -5,8 +5,9 @@ from __future__ import annotations
 import os
 from typing import Any, Optional
 
-from ..base import EmbeddingModel, LanguageModel, Provider
+from ..base import EmbeddingModel, ImageModel, LanguageModel, Provider
 from .embedding_model import OpenAIEmbeddingModel
+from .image_model import OpenAIImageModel
 from .language_model import OpenAIChatLanguageModel
 
 
@@ -94,3 +95,27 @@ class OpenAIProvider(Provider):
     def embedding(self, model_id: str = "text-embedding-3-small", **kwargs: Any) -> EmbeddingModel:
         """Alias for embedding_model() for compatibility."""
         return self.embedding_model(model_id=model_id, **kwargs)
+    
+    def image_model(
+        self,
+        model_id: str = "dall-e-3",
+        **kwargs: Any,
+    ) -> ImageModel:
+        """Get an OpenAI image model.
+        
+        Args:
+            model_id: OpenAI image model ID (e.g., "dall-e-2", "dall-e-3")
+            **kwargs: Additional model configuration
+            
+        Returns:
+            OpenAI image model instance
+        """
+        return OpenAIImageModel(
+            provider=self,
+            model_id=model_id,
+            **kwargs,
+        )
+    
+    def image(self, model_id: str = "dall-e-3", **kwargs: Any) -> ImageModel:
+        """Alias for image_model() for compatibility."""
+        return self.image_model(model_id=model_id, **kwargs)

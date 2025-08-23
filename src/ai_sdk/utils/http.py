@@ -1,8 +1,11 @@
 """HTTP utilities for AI SDK Python."""
 
-from typing import Dict, Optional
+import asyncio
+from typing import Dict, Optional, TypeVar, Callable, Awaitable
 
 import httpx
+
+T = TypeVar('T')
 
 
 def create_http_client(
@@ -36,3 +39,48 @@ def create_http_client(
         timeout=timeout,
         **kwargs,
     )
+
+
+async def retry_with_exponential_backoff(
+    func: Callable[[], Awaitable[T]],
+    max_retries: int = 2,
+    initial_delay: float = 1.0,
+    max_delay: float = 60.0,
+    backoff_factor: float = 2.0,
+) -> T:
+    """Retry a function with exponential backoff.
+    
+    Args:
+        func: Async function to retry
+        max_retries: Maximum number of retry attempts
+        initial_delay: Initial delay in seconds
+        max_delay: Maximum delay in seconds
+        backoff_factor: Backoff multiplier
+        
+    Returns:
+        Result of the function call
+        
+    Raises:
+        The last exception if all retries fail
+    """
+    delay = initial_delay
+    last_exception = None
+    
+    for attempt in range(max_retries + 1):
+        try:
+            return await func()
+        except Exception as e:
+            last_exception = e
+            if attempt == max_retries:
+                # Last attempt failed, re-raise the exception
+                break
+            
+            # Wait before retrying
+            await asyncio.sleep(min(delay, max_delay))
+            delay *= backoff_factor
+    
+    # Re-raise the last exception
+    if last_exception is not None:
+        raise last_exception
+    else:
+        raise RuntimeError("Retry failed without exception")

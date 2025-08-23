@@ -193,6 +193,48 @@ class EmbeddingModel(ABC):
         return result['embeddings']
 
 
+class GeneratedFile(ABC):
+    """Base class for generated files."""
+    
+    @property
+    @abstractmethod
+    def data(self) -> bytes:
+        """File data."""
+        pass
+    
+    @property
+    @abstractmethod
+    def media_type(self) -> str:
+        """File media type."""
+        pass
+
+
+class ImageGenerationWarning(dict):
+    """Warning from image generation."""
+    pass
+
+
+class ImageModelResponseMetadata(dict):
+    """Response metadata from image model."""
+    pass
+
+
+class ImageModelProviderMetadata(dict):
+    """Provider-specific metadata for image models."""
+    pass
+
+
+class ImageGenerationResult(dict):
+    """Result from image generation."""
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.images: List[bytes] = kwargs.get('images', [])
+        self.warnings: List[ImageGenerationWarning] = kwargs.get('warnings', [])
+        self.response: ImageModelResponseMetadata = kwargs.get('response', {})
+        self.provider_metadata: ImageModelProviderMetadata = kwargs.get('provider_metadata', {})
+
+
 class ImageModel(ABC):
     """Base class for image generation models."""
     
@@ -212,25 +254,43 @@ class ImageModel(ABC):
         self.provider = provider
         self.model_id = model_id
         self.config = kwargs
+        self.max_images_per_call = kwargs.get('max_images_per_call', 1)
+    
+    @property
+    def specification_version(self) -> str:
+        """Image model interface version."""
+        return "v2"
+    
+    @property
+    def provider_name(self) -> str:
+        """Name of the provider."""
+        return self.provider.name
     
     @abstractmethod
-    async def generate_image(
+    async def do_generate(
         self,
+        *,
         prompt: str,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
-        **kwargs: Any,
-    ) -> bytes:
-        """Generate an image.
+        n: int = 1,
+        size: Optional[str] = None,
+        aspect_ratio: Optional[str] = None,
+        seed: Optional[int] = None,
+        provider_options: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> ImageGenerationResult:
+        """Generate images.
         
         Args:
             prompt: Text prompt for image generation
-            width: Image width
-            height: Image height
-            **kwargs: Additional generation parameters
+            n: Number of images to generate
+            size: Size as "widthxheight" (e.g. "1024x1024")
+            aspect_ratio: Aspect ratio as "width:height" (e.g. "16:9")
+            seed: Seed for reproducible generation
+            provider_options: Provider-specific options
+            headers: Additional HTTP headers
             
         Returns:
-            Generated image data
+            Image generation result
         """
         pass
 
