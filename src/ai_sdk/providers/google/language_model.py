@@ -65,6 +65,8 @@ def _convert_usage(usage: Optional[GoogleUsageMetadata]) -> Usage:
         prompt_tokens=usage.prompt_token_count,
         completion_tokens=usage.candidates_token_count, 
         total_tokens=usage.total_token_count,
+        reasoning_tokens=usage.thoughts_token_count,
+        cached_input_tokens=usage.cached_content_token_count,
     )
 
 

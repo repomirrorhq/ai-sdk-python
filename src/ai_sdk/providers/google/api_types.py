@@ -96,6 +96,8 @@ class GoogleContentPart(BaseModel):
     text: Optional[str] = None
     inline_data: Optional[Dict[str, Any]] = None
     file_data: Optional[Dict[str, Any]] = None
+    thought: Optional[bool] = None  # Indicates if this is reasoning content
+    thought_signature: Optional[str] = None  # Signature for reasoning blocks
 
 
 class GoogleContent(BaseModel):
@@ -150,6 +152,7 @@ class GoogleUsageMetadata(BaseModel):
     candidates_token_count: int = 0
     total_token_count: int = 0
     cached_content_token_count: Optional[int] = None
+    thoughts_token_count: Optional[int] = None  # Reasoning tokens for Gemini models
 
 
 class GoogleCandidate(BaseModel):

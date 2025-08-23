@@ -24,6 +24,12 @@ from ..types import (
     TextDelta,
     Usage,
 )
+from .reasoning_models import (
+    filter_unsupported_params,
+    get_reasoning_warnings,
+    is_reasoning_model,
+    process_reasoning_messages,
+)
 
 
 class OpenAIChatLanguageModel(LanguageModel):
@@ -113,6 +119,9 @@ class OpenAIChatLanguageModel(LanguageModel):
                     "content": content_parts,
                 })
         
+        # Process messages for reasoning models (may modify system messages)
+        messages = process_reasoning_messages(self.model_id, messages)
+        
         # Build request body
         request_body = {
             "model": self.model_id,
@@ -155,6 +164,19 @@ class OpenAIChatLanguageModel(LanguageModel):
         # Add extra body parameters
         if options.extra_body:
             request_body.update(options.extra_body)
+        
+        # Apply reasoning model parameter filtering
+        if is_reasoning_model(self.model_id):
+            filtered_body, removed_params = filter_unsupported_params(
+                self.model_id, request_body
+            )
+            # TODO: Log warnings about removed parameters
+            # This could be passed to the caller or logged
+            if removed_params:
+                # For now, just silently filter. In a production system,
+                # you might want to collect these warnings and return them
+                pass
+            request_body = filtered_body
         
         return request_body
     
@@ -261,10 +283,15 @@ class OpenAIChatLanguageModel(LanguageModel):
         
         # Extract usage
         usage_data = response_data.get("usage", {})
+        completion_details = usage_data.get("completion_tokens_details", {})
+        prompt_details = usage_data.get("prompt_tokens_details", {})
+        
         usage = Usage(
             prompt_tokens=usage_data.get("prompt_tokens", 0),
             completion_tokens=usage_data.get("completion_tokens", 0),
             total_tokens=usage_data.get("total_tokens", 0),
+            reasoning_tokens=completion_details.get("reasoning_tokens"),
+            cached_input_tokens=prompt_details.get("cached_tokens"),
         )
         
         # Extract finish reason
@@ -303,7 +330,41 @@ class OpenAIChatLanguageModel(LanguageModel):
         
         # Handle finish
         if choice.get("finish_reason"):
-            # TODO: Extract final usage information if available
-            return None  # For now, don't yield finish parts
+            # Extract usage information from the final chunk
+            usage_data = chunk_data.get("usage", {})
+            completion_details = usage_data.get("completion_tokens_details", {})
+            prompt_details = usage_data.get("prompt_tokens_details", {})
+            
+            usage = Usage(
+                prompt_tokens=usage_data.get("prompt_tokens", 0),
+                completion_tokens=usage_data.get("completion_tokens", 0),
+                total_tokens=usage_data.get("total_tokens", 0),
+                reasoning_tokens=completion_details.get("reasoning_tokens"),
+                cached_input_tokens=prompt_details.get("cached_tokens"),
+            )
+            
+            # Map finish reason
+            finish_reason_map = {
+                "stop": FinishReason.STOP,
+                "length": FinishReason.LENGTH,
+                "content_filter": FinishReason.CONTENT_FILTER,
+                "tool_calls": FinishReason.TOOL_CALLS,
+            }
+            finish_reason = finish_reason_map.get(
+                choice.get("finish_reason"),
+                FinishReason.UNKNOWN,
+            )
+            
+            from ..types import FinishPart
+            return FinishPart(
+                finish_reason=finish_reason,
+                usage=usage,
+                provider_metadata=ProviderMetadata(data={
+                    "openai": {
+                        "model": chunk_data.get("model"),
+                        "created": chunk_data.get("created"),
+                    }
+                }) if "model" in chunk_data else None
+            )
         
         return None

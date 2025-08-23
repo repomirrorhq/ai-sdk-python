@@ -26,6 +26,10 @@ from .core.generate_image import generate_image, generate_image_sync, GenerateIm
 from .core.generate_speech import generate_speech, generate_speech_sync, GenerateSpeechResult, NoSpeechGeneratedError
 from .core.transcribe import transcribe, transcribe_sync, TranscriptionResult, NoTranscriptGeneratedError
 from .core.embed import embed, embed_many, EmbedResult, EmbedManyResult, EmbeddingUsage, cosine_similarity
+from .core.reasoning import (
+    extract_reasoning_text, add_usage, has_reasoning_tokens, 
+    get_reasoning_token_ratio, ReasoningExtractor
+)
 
 # Tools
 from .tools import Tool, ToolCall, ToolResult, tool, simple_tool, ToolRegistry

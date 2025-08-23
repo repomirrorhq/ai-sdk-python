@@ -27,6 +27,8 @@ class Usage(BaseModel):
     prompt_tokens: int = Field(ge=0, description="Number of tokens in the prompt")
     completion_tokens: int = Field(ge=0, description="Number of tokens in the completion")
     total_tokens: int = Field(ge=0, description="Total number of tokens")
+    reasoning_tokens: Optional[int] = Field(None, ge=0, description="Number of reasoning tokens used (for o1 models and similar)")
+    cached_input_tokens: Optional[int] = Field(None, ge=0, description="Number of cached input tokens")
 
 
 class ProviderMetadata(BaseModel):

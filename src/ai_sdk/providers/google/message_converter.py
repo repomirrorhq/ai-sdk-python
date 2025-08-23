@@ -3,7 +3,7 @@
 import base64
 from typing import List, Optional, Tuple
 
-from ...providers.types import Message, Content
+from ...providers.types import Message, Content, TextContent, ReasoningContent, ProviderMetadata
 from .api_types import GoogleContent, GoogleContentPart, GooglePromptRequest
 
 
@@ -145,21 +145,42 @@ def convert_google_response_to_message(google_content: GoogleContent) -> Message
     else:
         role = google_content.role
     
-    # Extract text content from parts
-    content_parts = []
+    # Extract content parts with reasoning support
+    content_parts: List[Content] = []
     for part in google_content.parts:
         if part.text:
-            content_parts.append(part.text)
+            if part.thought == True:
+                # This is reasoning content
+                provider_metadata = None
+                if part.thought_signature:
+                    provider_metadata = ProviderMetadata(data={
+                        "google": {"thoughtSignature": part.thought_signature}
+                    })
+                content_parts.append(ReasoningContent(
+                    text=part.text,
+                    provider_metadata=provider_metadata
+                ))
+            else:
+                # Regular text content
+                content_parts.append(TextContent(text=part.text))
         elif part.inline_data:
             # For now, we'll represent images as text descriptions
             mime_type = part.inline_data.get("mime_type", "unknown")
-            content_parts.append(f"[Image: {mime_type}]")
+            content_parts.append(TextContent(text=f"[Image: {mime_type}]"))
         elif part.file_data:
             # For file data, represent as text description
             file_uri = part.file_data.get("file_uri", "unknown")
-            content_parts.append(f"[File: {file_uri}]")
+            content_parts.append(TextContent(text=f"[File: {file_uri}]"))
     
-    # Join all text parts
-    content = "\n".join(content_parts) if len(content_parts) > 1 else content_parts[0] if content_parts else ""
+    # If we have structured content parts, use them; otherwise fall back to simple text
+    if content_parts:
+        if len(content_parts) == 1 and isinstance(content_parts[0], TextContent):
+            # Single text part can be simplified to string
+            content = content_parts[0].text
+        else:
+            # Multiple parts or reasoning content - keep structured
+            content = content_parts
+    else:
+        content = ""
     
     return Message(role=role, content=content)
