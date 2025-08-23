@@ -12,10 +12,12 @@ Key features:
 """
 
 from .provider import create_mistral, mistral, MistralProvider, MistralProviderSettings
+from .types import MistralLanguageModelOptions
 
 __all__ = [
     "create_mistral",
     "mistral",
     "MistralProvider", 
     "MistralProviderSettings",
+    "MistralLanguageModelOptions",
 ]
