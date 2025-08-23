@@ -35,6 +35,7 @@ from .perplexity import PerplexityProvider, create_perplexity_provider
 from .deepseek import DeepSeekProvider, create_deepseek_provider
 from .xai import XAIProvider
 from .deepinfra import DeepInfraProvider, create_deepinfra_provider
+from .elevenlabs import ElevenLabsProvider, create_elevenlabs
 
 __all__ = [
     "Provider",
@@ -80,4 +81,6 @@ __all__ = [
     "XAIProvider",
     "DeepInfraProvider",
     "create_deepinfra_provider",
+    "ElevenLabsProvider",
+    "create_elevenlabs",
 ]
