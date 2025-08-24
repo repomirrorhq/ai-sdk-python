@@ -22,13 +22,13 @@ from ai_sdk import generate_text, MockProvider
 async def test_basic_generation():
     # Create a mock provider
     mock_provider = MockProvider()
-    
+
     # Use it like any real provider
     response = await generate_text(
         model=mock_provider.chat("default"),
         messages=[{"role": "user", "content": "Hello"}],
     )
-    
+
     # The mock returns predictable responses
     assert response.text == "Mock response"
     assert response.finish_reason == "stop"
@@ -283,7 +283,7 @@ async def test_ai_generation(ai_provider):
         model=ai_provider.chat("gpt-4o-mini"),
         messages=[{"role": "user", "content": "Hello"}]
     )
-    
+
     # Works with both real and mock providers
     assert len(response.text) > 0
 ```
@@ -326,17 +326,17 @@ async def test_streaming():
     mock = MockLanguageModel(
         stream_response=["Streaming ", "response ", "works!"]
     )
-    
+
     chunks = []
     stream = await stream_text(
         model=mock,
         messages=[{"role": "user", "content": "Stream test"}]
     )
-    
+
     async for chunk in stream:
         if chunk.type == "text-delta":
             chunks.append(chunk.text)
-    
+
     assert "".join(chunks) == "Streaming response works!"
 ```
 
@@ -370,7 +370,7 @@ class RecordingMock(MockLanguageModel):
     def __init__(self):
         super().__init__()
         self.recorded_calls = []
-    
+
     async def generate(self, messages, **kwargs):
         # Record all calls for analysis
         self.recorded_calls.append({
@@ -393,25 +393,25 @@ assert "Hello" in mock.recorded_calls[0]["messages"][0]["content"]
 ```python
 async def test_model_comparison():
     """Test that different models produce different responses."""
-    
+
     model_a = MockLanguageModel(generate_response="Response A")
     model_b = MockLanguageModel(generate_response="Response B")
-    
+
     provider = MockProvider(language_models={
         "model-a": model_a,
         "model-b": model_b,
     })
-    
+
     response_a = await generate_text(
         model=provider.chat("model-a"),
         messages=[{"role": "user", "content": "Test"}]
     )
-    
+
     response_b = await generate_text(
-        model=provider.chat("model-b"), 
+        model=provider.chat("model-b"),
         messages=[{"role": "user", "content": "Test"}]
     )
-    
+
     assert response_a.text != response_b.text
 ```
 
@@ -423,16 +423,16 @@ from ai_sdk.testing import MockLanguageModel
 
 async def test_response_time():
     """Test that responses come back quickly."""
-    
+
     mock = MockLanguageModel(delay=0.1)  # 100ms delay
-    
+
     start = time.time()
     response = await generate_text(
         model=mock,
         messages=[{"role": "user", "content": "Fast test"}]
     )
     duration = time.time() - start
-    
+
     assert 0.1 <= duration <= 0.2  # Should be around 100ms
     assert response.text == "Mock response"
 ```
@@ -474,13 +474,13 @@ from ai_sdk.testing import MockProvider, assert_generation_result
 class TestAIIntegration(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.mock_provider = MockProvider()
-    
+
     async def test_generate_text(self):
         response = await generate_text(
             model=self.mock_provider.chat(),
             messages=[{"role": "user", "content": "Hello"}]
         )
-        
+
         assert_generation_result(
             response,
             should_have_usage=True,
@@ -511,25 +511,25 @@ async def test_chatbot_conversation():
         "I can help with that.",
         "Is there anything else?"
     ]
-    
+
     mock = MockLanguageModel()
     conversation = []
-    
+
     for i, user_msg in enumerate(["Hi", "Help me", "No thanks"]):
         mock.generate_response = responses[i]
-        
+
         conversation.append({"role": "user", "content": user_msg})
-        
+
         response = await generate_text(
             model=mock,
             messages=conversation.copy()
         )
-        
+
         conversation.append({
-            "role": "assistant", 
+            "role": "assistant",
             "content": response.text
         })
-        
+
         assert response.text == responses[i]
 ```
 
@@ -541,17 +541,17 @@ async def test_rag_system():
     mock_embedding = MockEmbeddingModel(
         embedding_response=[0.1, 0.2, 0.3]
     )
-    
+
     mock_llm = MockLanguageModel(
         generate_response="Based on the context, the answer is..."
     )
-    
+
     # Simulate RAG workflow
     query = "What is AI?"
-    
+
     # 1. Embed query
     query_embedding = await embed(model=mock_embedding, values=[query])
-    
+
     # 2. Generate with context
     context = "AI is artificial intelligence..."
     response = await generate_text(
@@ -561,7 +561,7 @@ async def test_rag_system():
             {"role": "user", "content": query}
         ]
     )
-    
+
     assert "Based on the context" in response.text
 ```
 

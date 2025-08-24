@@ -12,11 +12,11 @@ async def main():
     if not os.getenv("OPENAI_API_KEY"):
         print("Please set OPENAI_API_KEY environment variable")
         return
-    
+
     # Create provider and model
     provider = OpenAIProvider()
     model = provider.language_model("gpt-3.5-turbo")
-    
+
     # Generate text
     print("Generating text...")
     result = await generate_text(
@@ -25,7 +25,7 @@ async def main():
         max_tokens=100,
         temperature=0.7,
     )
-    
+
     print(f"Generated text:\n{result.text}")
     print(f"Tokens used: {result.usage.total_tokens}")
     print(f"Finish reason: {result.finish_reason}")
