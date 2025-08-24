@@ -84,11 +84,76 @@ class ToolResultContent:
         self.is_error = is_error
 
 
+class AudioContent:
+    """Audio content in a message."""
+    
+    def __init__(self, audio: Union[str, bytes], mime_type: Optional[str] = None):
+        self.type = "audio"
+        self.audio = audio
+        self.mime_type = mime_type
+
+
 # Union of all content types
-Content = Union[TextContent, ImageContent, ToolCallContent, ToolResultContent]
+Content = Union[TextContent, ImageContent, ToolCallContent, ToolResultContent, AudioContent]
 
 # Alias for ContentPart
 ContentPart = Content
+
+# Content Part aliases - These are the same as the content types but with "Part" suffix
+TextContentPart = TextContent
+ImageContentPart = ImageContent
+ToolCallContentPart = ToolCallContent
+ToolResultContentPart = ToolResultContent
+AudioContentPart = AudioContent
+
+
+# Embedding types - Import from embed module to avoid circular imports
+# These are compatibility aliases for the actual implementations
+class EmbedOptions:
+    """Options for embedding operations."""
+    
+    def __init__(self, 
+                 max_retries: Optional[int] = None,
+                 abort_signal: Optional[Any] = None,
+                 headers: Optional[Dict[str, str]] = None,
+                 experimental_telemetry: Optional[Any] = None):
+        self.max_retries = max_retries
+        self.abort_signal = abort_signal
+        self.headers = headers
+        self.experimental_telemetry = experimental_telemetry
+
+
+class EmbedResult:
+    """Result from embedding a single value."""
+    
+    def __init__(self, embedding: List[float], usage: "Usage", value: Any = None):
+        self.embedding = embedding
+        self.usage = usage
+        self.value = value
+
+
+class EmbedManyOptions:
+    """Options for embedding multiple values."""
+    
+    def __init__(self,
+                 max_retries: Optional[int] = None,
+                 abort_signal: Optional[Any] = None,
+                 headers: Optional[Dict[str, str]] = None,
+                 experimental_telemetry: Optional[Any] = None):
+        self.max_retries = max_retries
+        self.abort_signal = abort_signal
+        self.headers = headers
+        self.experimental_telemetry = experimental_telemetry
+
+
+class EmbedManyResult:
+    """Result from embedding multiple values."""
+    
+    def __init__(self, embeddings: List[List[float]], usage: "Usage", values: List[Any] = None):
+        self.embeddings = embeddings
+        self.usage = usage
+        self.values = values
+
 
 
 # Message Types

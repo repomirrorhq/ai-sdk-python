@@ -34,6 +34,11 @@ class PerplexityProvider(Provider):
         self._provider_name = "perplexity"
     
     @property
+    def name(self) -> str:
+        """Name of the provider."""
+        return self._provider_name
+    
+    @property
     def provider(self) -> str:
         return self._provider_name
     
