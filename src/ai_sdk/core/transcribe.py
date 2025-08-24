@@ -34,6 +34,8 @@ class TranscriptionModelProviderMetadata(dict):
 class TranscriptionResult(BaseModel):
     """Result of transcription."""
     
+    model_config = {'arbitrary_types_allowed': True}
+    
     text: str = Field(..., description="Transcribed text")
     warnings: List[TranscriptionWarning] = Field(default_factory=list, description="Warnings from the provider") 
     response: TranscriptionModelResponseMetadata = Field(..., description="Response metadata")

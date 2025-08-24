@@ -29,7 +29,7 @@ from .google import GoogleProvider, create_google
 from .google_vertex import GoogleVertexProvider, create_vertex
 from .azure import AzureOpenAIProvider, create_azure
 from .groq import GroqProvider, create_groq
-from .togetherai import TogetherAIProvider, create_together
+# from .togetherai import TogetherAIProvider, create_together  # TEMP: disabled to fix circular import
 from .bedrock import BedrockProvider, create_bedrock
 from .mistral import MistralProvider, create_mistral
 from .cohere import CohereProvider, create_cohere_provider

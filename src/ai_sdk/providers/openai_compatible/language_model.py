@@ -8,7 +8,8 @@ import json
 from typing import Dict, Any, List, AsyncIterator, Optional, Union
 from urllib.parse import urljoin, urlencode
 
-from ...core.generate_text import LanguageModel, GenerateTextResult
+from ..base import LanguageModel
+from ...core.generate_text import GenerateTextResult
 from ...core.step import Step, StepResult
 from ...streaming.base import StreamingTextResult, TextStreamChunk
 from ...utils.http import make_request

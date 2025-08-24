@@ -28,6 +28,9 @@ class MCPClientError(AISDKError):
 
 class MCPClientConfig(BaseModel):
     """Configuration for MCP client."""
+    
+    model_config = {'arbitrary_types_allowed': True}
+    
     transport: Union[MCPTransportConfig, MCPTransport]
     on_uncaught_error: Optional[Callable[[Exception], None]] = None
     name: str = "ai-sdk-mcp-client"

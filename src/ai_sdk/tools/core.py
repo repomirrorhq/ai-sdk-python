@@ -31,6 +31,8 @@ class ToolCallOptions(BaseModel):
 
 class ToolCall(BaseModel, Generic[T]):
     """A tool call made by the language model."""
+    
+    model_config = {'arbitrary_types_allowed': True}
 
     type: str = "call"
     """Type of the tool call."""

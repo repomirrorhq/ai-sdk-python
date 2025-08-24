@@ -50,6 +50,8 @@ class GeneratedAudioFile(GeneratedFile):
 class GenerateSpeechResult(BaseModel):
     """Result of speech generation."""
     
+    model_config = {'arbitrary_types_allowed': True}
+    
     audio: GeneratedAudioFile = Field(..., description="Generated audio file")
     warnings: List[SpeechWarning] = Field(default_factory=list, description="Warnings from the provider")
     response: SpeechModelResponseMetadata = Field(..., description="Response metadata")

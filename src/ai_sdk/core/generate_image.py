@@ -28,6 +28,8 @@ class NoImageGeneratedError(AISDKError):
 class GenerateImageResult(BaseModel):
     """Result of image generation."""
     
+    model_config = {'arbitrary_types_allowed': True}
+    
     images: List[GeneratedFile] = Field(..., description="Generated images")
     warnings: List[ImageGenerationWarning] = Field(default_factory=list, description="Warnings from the provider")
     responses: List[ImageModelResponseMetadata] = Field(..., description="Response metadata")
