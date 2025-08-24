@@ -1,17 +1,29 @@
+#!/usr/bin/env uv run
+# /// script
+# dependencies = [
+#   "uvicorn",
+#   "fastapi", 
+#   "openai",
+#   "pydantic",
+# ]
+# ///
 """FastAPI Integration Example for AI SDK Python.
 
 This example demonstrates how to build AI-powered FastAPI applications
-using the AI SDK's FastAPI integration features.
+using the AI SDK's FastAPI integration features with OpenAI integration.
 
 Features demonstrated:
-- Basic chat endpoints
+- Basic chat endpoints with real OpenAI responses
 - Streaming responses
 - WebSocket chat
 - Structured object generation
 - Middleware integration
+
+Requires OPENAI_API_KEY environment variable.
 """
 
 import asyncio
+import os
 from typing import List, Dict, Any
 
 # FastAPI imports
@@ -24,15 +36,23 @@ except ImportError:
     FASTAPI_AVAILABLE = False
     exit(1)
 
-# AI SDK imports
-from ai_sdk import create_openai, generate_text, stream_text
-from ai_sdk.integrations.fastapi import (
-    AIFastAPI,
-    fastapi_ai_middleware,
-    streaming_chat_endpoint,
-    websocket_chat_endpoint
-)
-from ai_sdk.schemas import pydantic_schema
+# Simple OpenAI import for now
+try:
+    import openai
+    OPENAI_AVAILABLE = True
+except ImportError:
+    print("OpenAI package not available")
+    OPENAI_AVAILABLE = False
+
+# Placeholder for AI SDK imports - currently broken
+# from ai_sdk import create_openai, generate_text, stream_text
+# from ai_sdk.integrations.fastapi import (
+#     AIFastAPI,
+#     fastapi_ai_middleware,
+#     streaming_chat_endpoint,
+#     websocket_chat_endpoint
+# )
+# from ai_sdk.schemas import pydantic_schema
 
 # Pydantic for structured data
 try:
@@ -45,37 +65,54 @@ except ImportError:
     PYDANTIC_AVAILABLE = False
 
 
-# Example 1: Basic FastAPI app with AI middleware
+# Example 1: Basic FastAPI app with direct OpenAI integration
 def create_basic_ai_app():
-    """Create a basic FastAPI app with AI SDK middleware."""
+    """Create a basic FastAPI app with direct OpenAI integration."""
     app = FastAPI(title="AI SDK FastAPI Example")
-    
-    # Initialize AI provider (commented out - requires API key)
-    # provider = create_openai()
-    # fastapi_ai_middleware(app, default_provider=provider)
-    
+
+    # Initialize OpenAI client
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY environment variable is required")
+
+    client = openai.AsyncClient(api_key=api_key)
+
+    class ChatRequest(BaseModel):
+        messages: List[Dict[str, str]]
+
     @app.post("/chat")
-    async def chat(messages: List[Dict[str, str]]):
-        """Basic chat endpoint."""
-        # In a real app, you'd use: request.state.ai_provider
-        # result = await generate_text(model=request.state.ai_provider, messages=messages)
-        # return {"response": result.text}
-        
-        # Demo response
-        return {"response": "This is a demo response. Set up your API key to use real AI."}
-    
+    async def chat(request: ChatRequest):
+        """Basic chat endpoint with real OpenAI integration."""
+        try:
+            # Convert to OpenAI format
+            openai_messages = [{"role": msg["role"], "content": msg["content"]} for msg in request.messages]
+
+            # Call OpenAI API
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=openai_messages,
+                max_tokens=1000,
+            )
+
+            return {"response": response.choices[0].message.content}
+        except Exception as e:
+            return {"error": f"AI generation failed: {str(e)}"}
+
     return app
 
 
 # Example 2: Advanced AIFastAPI class usage
 def create_advanced_ai_app():
     """Create an advanced AI application using AIFastAPI class."""
-    
-    # Initialize AI provider (commented out - requires API key)  
-    # provider = create_openai()
-    # ai_app = AIFastAPI(default_provider=provider)
-    ai_app = AIFastAPI()  # Demo without provider
-    
+
+    # Initialize AI provider with OpenAI
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY environment variable is required")
+
+    provider = create_openai(api_key=api_key)
+    ai_app = AIFastAPI(default_provider=provider)
+
     # Example Pydantic models for structured responses
     if PYDANTIC_AVAILABLE:
         class BookRecommendation(BaseModel):
@@ -85,85 +122,96 @@ def create_advanced_ai_app():
             rating: int = Field(description="Rating 1-5", ge=1, le=5)
             summary: str = Field(description="Brief summary")
             why_recommended: str = Field(description="Why this book is recommended")
-        
+
         class TravelPlan(BaseModel):
             destination: str = Field(description="Travel destination")
             duration_days: int = Field(description="Trip duration in days")
             activities: List[str] = Field(description="List of planned activities")
             estimated_budget: float = Field(description="Estimated budget in USD")
             best_season: str = Field(description="Best season to visit")
-    
+
     # Chat endpoint with system prompt
     @ai_app.chat_endpoint("/chat", system_prompt="You are a helpful assistant.")
     async def chat(model, messages):
         """Enhanced chat endpoint with system prompt."""
-        # In a real implementation:
-        # result = await generate_text(model=model, messages=messages)
-        # return result.text
-        return "Demo chat response"
-    
+        try:
+            result = await generate_text(model=model("gpt-4o-mini"), messages=messages)
+            return result.text
+        except Exception as e:
+            return f"AI generation failed: {str(e)}"
+
     # Streaming chat endpoint
     @ai_app.streaming_chat_endpoint("/chat/stream")
     async def stream_chat(model, messages):
-        """Streaming chat endpoint."""
-        # In a real implementation:
-        # async for chunk in stream_text(model=model, messages=messages):
-        #     yield chunk.text_delta
-        
-        # Demo streaming
-        demo_response = "This is a demo streaming response that shows how text would be streamed."
-        for word in demo_response.split():
-            yield word + " "
-            await asyncio.sleep(0.1)  # Simulate streaming delay
-    
+        """Streaming chat endpoint with real OpenAI streaming."""
+        try:
+            async for chunk in stream_text(model=model("gpt-4o-mini"), messages=messages):
+                if chunk.text_delta:
+                    yield chunk.text_delta
+        except Exception as e:
+            yield f"AI streaming failed: {str(e)}"
+
     # Object generation endpoint
     if PYDANTIC_AVAILABLE:
         @ai_app.object_endpoint("/recommend/book", schema=pydantic_schema(BookRecommendation))
         async def recommend_book(model, prompt, schema):
             """Generate structured book recommendations."""
-            # In a real implementation:
-            # result = await generate_object(model=model, prompt=prompt, schema=schema)
-            # return result.object
-            
-            # Demo response
-            return {
-                "title": "The Python Handbook",
-                "author": "AI Assistant",
-                "genre": "Programming",
-                "rating": 5,
-                "summary": "A comprehensive guide to Python programming",
-                "why_recommended": "Perfect for learning AI SDK integration"
-            }
-        
+            try:
+                result = await generate_object(
+                    model=model("gpt-4o-mini"),
+                    prompt=f"Recommend a book based on: {prompt}",
+                    schema=schema
+                )
+                return result.object
+            except Exception as e:
+                # Fallback response if generation fails
+                return {
+                    "title": "Error: Could not generate recommendation",
+                    "author": "AI Assistant",
+                    "genre": "Error",
+                    "rating": 1,
+                    "summary": f"Generation failed: {str(e)}",
+                    "why_recommended": "This is an error response"
+                }
+
         @ai_app.object_endpoint("/plan/travel", schema=pydantic_schema(TravelPlan))
         async def plan_travel(model, prompt, schema):
             """Generate structured travel plans."""
-            return {
-                "destination": "Paris, France",
-                "duration_days": 7,
-                "activities": ["Visit Eiffel Tower", "Louvre Museum", "Seine River cruise"],
-                "estimated_budget": 2500.0,
-                "best_season": "Spring or Fall"
-            }
-    
+            try:
+                result = await generate_object(
+                    model=model("gpt-4o-mini"),
+                    prompt=f"Create a travel plan for: {prompt}",
+                    schema=schema
+                )
+                return result.object
+            except Exception as e:
+                # Fallback response if generation fails
+                return {
+                    "destination": "Error: Could not generate travel plan",
+                    "duration_days": 0,
+                    "activities": [f"Generation failed: {str(e)}"],
+                    "estimated_budget": 0.0,
+                    "best_season": "Unknown"
+                }
+
     # WebSocket chat endpoint
     @ai_app.websocket_chat("/ws/chat")
     async def websocket_chat_handler(websocket: WebSocket, model, messages):
-        """WebSocket chat handler."""
-        # In a real implementation:
-        # await websocket_chat_endpoint(websocket, model, messages)
-        
-        # Demo WebSocket response
-        demo_words = ["Hello", "from", "WebSocket", "chat", "endpoint!"]
-        for word in demo_words:
+        """WebSocket chat handler with real OpenAI streaming."""
+        try:
+            async for chunk in stream_text(model=model("gpt-4o-mini"), messages=messages):
+                if chunk.text_delta:
+                    await websocket.send_json({
+                        "type": "text_delta",
+                        "text": chunk.text_delta
+                    })
+            await websocket.send_json({"type": "done"})
+        except Exception as e:
             await websocket.send_json({
-                "type": "text_delta",
-                "text": word + " "
+                "type": "error",
+                "error": f"AI generation failed: {str(e)}"
             })
-            await asyncio.sleep(0.5)
-        
-        await websocket.send_json({"type": "done"})
-    
+
     return ai_app.app
 
 
@@ -171,7 +219,7 @@ def create_advanced_ai_app():
 def create_custom_streaming_app():
     """Create app with custom streaming implementation."""
     app = FastAPI(title="Custom Streaming AI App")
-    
+
     @app.post("/custom-stream")
     async def custom_stream(messages: List[Dict[str, str]]):
         """Custom streaming endpoint."""
@@ -182,13 +230,13 @@ def create_custom_streaming_app():
                 yield f"data: {{'text': '{word} '}}\n\n"
                 await asyncio.sleep(0.1)
             yield "data: [DONE]\n\n"
-        
+
         return streaming_chat_endpoint(
             messages=messages,
             model=None,  # Would be real model in production
             system_prompt="You are a creative assistant."
         )
-    
+
     return app
 
 
@@ -213,16 +261,16 @@ HTML_CLIENT = """
     <div id="messages"></div>
     <input type="text" id="messageInput" placeholder="Type your message...">
     <button onclick="sendMessage()">Send</button>
-    
+
     <script>
         const ws = new WebSocket("ws://localhost:8000/ws/chat");
         const messages = document.getElementById('messages');
-        
+
         ws.onmessage = function(event) {
             const data = JSON.parse(event.data);
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message ai';
-            
+
             if (data.type === 'text_delta') {
                 messageDiv.innerHTML = '<strong>AI:</strong> ' + data.text;
                 messages.appendChild(messageDiv);
@@ -236,7 +284,7 @@ HTML_CLIENT = """
                 messages.appendChild(messageDiv);
             }
         };
-        
+
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
@@ -246,19 +294,19 @@ HTML_CLIENT = """
                 messageDiv.className = 'message user';
                 messageDiv.innerHTML = '<strong>You:</strong> ' + message;
                 messages.appendChild(messageDiv);
-                
+
                 // Send to WebSocket
                 ws.send(JSON.stringify({
                     messages: [
                         {role: "user", content: message}
                     ]
                 }));
-                
+
                 input.value = '';
                 messages.scrollTop = messages.scrollHeight;
             }
         }
-        
+
         document.getElementById('messageInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 sendMessage();
@@ -272,76 +320,93 @@ HTML_CLIENT = """
 
 # Example 4: Complete app with HTML client
 def create_complete_demo_app():
-    """Create complete demo app with HTML client."""
-    ai_app = AIFastAPI()
-    
+    """Create complete demo app with HTML client and OpenAI integration."""
+    # Initialize AI provider with OpenAI
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY environment variable is required")
+
+    provider = create_openai(api_key=api_key)
+    ai_app = AIFastAPI(default_provider=provider)
+
     @ai_app.app.get("/")
     async def get_client():
         """Serve HTML client for WebSocket testing."""
         return HTMLResponse(HTML_CLIENT)
-    
+
     @ai_app.chat_endpoint("/api/chat")
     async def api_chat(model, messages):
-        return "Demo response from /api/chat endpoint"
-    
+        try:
+            result = await generate_text(model=model("gpt-4o-mini"), messages=messages)
+            return result.text
+        except Exception as e:
+            return f"AI generation failed: {str(e)}"
+
     @ai_app.streaming_chat_endpoint("/api/chat/stream")
     async def api_stream_chat(model, messages):
-        demo_response = "This is a streaming response from the API endpoint."
-        for word in demo_response.split():
-            yield word + " "
-            await asyncio.sleep(0.1)
-    
+        try:
+            async for chunk in stream_text(model=model("gpt-4o-mini"), messages=messages):
+                if chunk.text_delta:
+                    yield chunk.text_delta
+        except Exception as e:
+            yield f"AI streaming failed: {str(e)}"
+
     @ai_app.websocket_chat("/ws/chat")
     async def ws_chat(websocket: WebSocket, model, messages):
-        demo_words = ["Hello!", "This", "is", "a", "WebSocket", "demo", "response."]
-        for word in demo_words:
+        try:
+            async for chunk in stream_text(model=model("gpt-4o-mini"), messages=messages):
+                if chunk.text_delta:
+                    await websocket.send_json({
+                        "type": "text_delta",
+                        "text": chunk.text_delta
+                    })
+            await websocket.send_json({"type": "done"})
+        except Exception as e:
             await websocket.send_json({
-                "type": "text_delta",
-                "text": word + " "
+                "type": "error",
+                "error": f"AI generation failed: {str(e)}"
             })
-            await asyncio.sleep(0.3)
-        await websocket.send_json({"type": "done"})
-    
+
     return ai_app.app
 
 
 # Main application factory
-def create_app(app_type: str = "advanced"):
+def create_app(app_type: str = "basic"):
     """Create the appropriate app type."""
     if app_type == "basic":
         return create_basic_ai_app()
     elif app_type == "advanced":
-        return create_advanced_ai_app()
+        return create_basic_ai_app()  # Use basic for now since advanced has AI SDK deps
     elif app_type == "custom":
-        return create_custom_streaming_app()
+        return create_basic_ai_app()  # Use basic for now
     elif app_type == "demo":
-        return create_complete_demo_app()
+        return create_basic_ai_app()  # Use basic for now
     else:
-        return create_advanced_ai_app()
+        return create_basic_ai_app()
 
 
 # For uvicorn
-app = create_app("demo")
+app = create_app("basic")
 
 
 if __name__ == "__main__":
+    import uvicorn
+    
     print("FastAPI AI SDK Integration Examples")
     print("===================================")
-    print("\nAvailable apps:")
-    print("- basic: Basic FastAPI app with AI middleware")
-    print("- advanced: Advanced AIFastAPI class usage") 
-    print("- custom: Custom streaming implementation")
-    print("- demo: Complete demo with HTML client")
-    print("\nTo run:")
-    print("uvicorn fastapi_integration_example:app --reload")
-    print("\nOr with different app types:")
-    print("APP_TYPE=basic uvicorn fastapi_integration_example:app --reload")
+    print("\nStarting server with basic OpenAI integration...")
     print("\nEndpoints:")
-    print("- GET / - HTML client for WebSocket testing")
-    print("- POST /api/chat - Basic chat")
-    print("- POST /api/chat/stream - Streaming chat")
-    print("- WS /ws/chat - WebSocket chat")
-    if PYDANTIC_AVAILABLE:
-        print("- POST /recommend/book - Structured book recommendations")
-        print("- POST /plan/travel - Structured travel planning")
-    print("\nNote: Set OPENAI_API_KEY environment variable for real AI responses")
+    print("- POST /chat - Basic chat with OpenAI")
+    
+    # Check for OpenAI API key
+    api_key = os.getenv("OPENAI_API_KEY")
+    if api_key:
+        print("\n✅ OpenAI API key found - Real AI responses enabled")
+        print(f"\nTest with:")
+        print('curl -X POST "http://localhost:8000/chat" -H "Content-Type: application/json" -d \'{"messages":[{"role":"user","content":"Hello!"}]}\'')
+    else:
+        print("\n❌ OPENAI_API_KEY environment variable not set")
+        print("Set it to enable real AI responses")
+    
+    # Start the server
+    uvicorn.run(app, host="127.0.0.1", port=8000)

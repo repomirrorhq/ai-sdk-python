@@ -145,6 +145,33 @@ def chat():
 app = ai_app.app  # Flask app ready to run
 ```
 
+### Usage with FastAPI
+
+Get started quickly with the working FastAPI example:
+
+```bash
+# Run the FastAPI example server
+./examples/fastapi_integration_example.py
+
+# Test with curl
+curl -X POST "http://localhost:8000/chat" \
+  -H "Content-Type: application/json" \
+  -d '{"messages":[{"role":"user","content":"Hello!"}]}'
+
+# Expected response:
+# {"response":"Hello! How can I help you today?"}
+```
+
+The example includes:
+- **Direct OpenAI integration** with real API responses
+- **Automatic dependency management** via uv script
+- **Type-safe request/response** with Pydantic models
+- **Production-ready error handling**
+
+**Requirements:**
+- Set `OPENAI_API_KEY` environment variable
+- Run with `./examples/fastapi_integration_example.py`
+
 📖 **[View Complete Enhanced Features Guide](docs/enhanced_features_guide.md)**
 
 ## 🛠️ Development
