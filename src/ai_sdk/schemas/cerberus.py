@@ -181,7 +181,7 @@ def cerberus_schema(schema: Dict[str, Any]) -> CerberusSchema:
         schema = {
             'name': {'type': 'string', 'required': True},
             'age': {'type': 'integer', 'min': 0, 'required': True},
-            'email': {'type': 'string', 'regex': r'^.+@.+\..+$'}
+            'email': {'type': 'string', 'regex': r'^.+@.+\\.+$'}
         }
         
         validator = cerberus_schema(schema)
