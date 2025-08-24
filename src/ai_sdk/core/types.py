@@ -87,6 +87,9 @@ class ToolResultContent:
 # Union of all content types
 Content = Union[TextContent, ImageContent, ToolCallContent, ToolResultContent]
 
+# Alias for ContentPart
+ContentPart = Content
+
 
 # Message Types
 class Message:
@@ -329,3 +332,75 @@ class TranscriptionSegment:
 
 # Alias for compatibility - BaseLanguageModel should be imported from providers.base
 BaseLanguageModel = LanguageModel
+
+
+# Additional types needed by providers
+class GenerateTextOptions:
+    """Options for text generation."""
+    
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+class StreamTextOptions:
+    """Options for streaming text generation."""
+    
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+class TextStartPart:
+    """Start of text streaming."""
+    
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+class TextDeltaPart:
+    """Text delta in streaming."""
+    
+    def __init__(self, text_delta: str, **kwargs):
+        self.text_delta = text_delta
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+class FinishPart:
+    """Finish part in streaming."""
+    
+    def __init__(self, finish_reason: FinishReason, **kwargs):
+        self.finish_reason = finish_reason
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+class ToolCallPart:
+    """Tool call part in streaming."""
+    
+    def __init__(self, tool_call_id: str, tool_name: str, args: Dict[str, Any], **kwargs):
+        self.tool_call_id = tool_call_id
+        self.tool_name = tool_name
+        self.args = args
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+class ToolResultPart:
+    """Tool result part in streaming."""
+    
+    def __init__(self, tool_call_id: str, result: Any, **kwargs):
+        self.tool_call_id = tool_call_id
+        self.result = result
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+class ResponseMetadata:
+    """Response metadata."""
+    
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)

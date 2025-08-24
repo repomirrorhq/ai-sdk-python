@@ -24,7 +24,7 @@ from ai_sdk.core.types import (
     ProviderMetadata,
     FinishReason
 )
-from ai_sdk.core.stream_text import TextStreamPart
+from ai_sdk.core.types import TextStreamPart
 from ai_sdk.utils.http import make_request, stream_request
 from ai_sdk.errors.base import AISDKError
 from .types import (

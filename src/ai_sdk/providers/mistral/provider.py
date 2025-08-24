@@ -31,6 +31,11 @@ class MistralProvider(Provider):
     def __init__(self, settings: MistralProviderSettings):
         self.settings = settings
         self._http_client = None
+    
+    @property
+    def name(self) -> str:
+        """Name of the provider."""
+        return "mistral"
         
     def _get_http_client(self):
         """Get or create HTTP client."""

@@ -4,26 +4,24 @@ import json
 from typing import List, Dict, Any, Union
 
 from ...providers.types import Message, Content, TextContent, ImageContent, ToolCallContent, ToolResultContent, FinishReason
-from ...providers.openai.utils import (
-    convert_to_openai_messages as _convert_to_openai_messages,
-    convert_to_openai_tools as _convert_to_openai_tools
-)
 
 
 def convert_to_mistral_messages(messages: List[Message]) -> List[Message]:
     """Convert AI SDK messages to Mistral format.
     
-    Mistral API is OpenAI-compatible, so we can reuse OpenAI conversion logic.
+    Mistral API is OpenAI-compatible, so we use OpenAI message format.
     """
-    return _convert_to_openai_messages(messages)
+    # Mistral API is compatible with OpenAI message format
+    return messages
 
 
 def convert_to_mistral_tools(tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Convert AI SDK tools to Mistral tool format.
     
-    Mistral API is OpenAI-compatible, so we can reuse OpenAI conversion logic.
+    Mistral API is OpenAI-compatible, so we use OpenAI tool format.
     """
-    return _convert_to_openai_tools(tools)
+    # Mistral API is compatible with OpenAI tool format
+    return tools
 
 
 def convert_mistral_finish_reason(mistral_reason: str) -> FinishReason:

@@ -42,6 +42,11 @@ class BedrockProvider(Provider):
         self.settings = settings
         self._http_client = None
         self._fetch_fn = None
+    
+    @property
+    def name(self) -> str:
+        """Name of the provider."""
+        return "bedrock"
         
     async def _get_http_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client."""
