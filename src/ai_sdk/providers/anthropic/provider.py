@@ -58,9 +58,15 @@ class AnthropicProvider(BaseProvider):
             generate_id=generate_id,
         )
         
-        super().__init__("anthropic", settings)
+        super().__init__(api_key=api_key, **settings.__dict__)
+        self.settings = settings
     
-    def language_model(self, model_id: str) -> AnthropicLanguageModel:
+    @property
+    def name(self) -> str:
+        """Name of the provider."""
+        return "anthropic"
+    
+    def language_model(self, model_id: str, **kwargs: Any) -> AnthropicLanguageModel:
         """
         Create an Anthropic language model.
         
@@ -126,5 +132,13 @@ def create_anthropic(
     )
 
 
-# Default provider instance
-anthropic = create_anthropic()
+# Default provider instance (lazy initialization)
+anthropic = None
+
+
+def get_anthropic():
+    """Get the default anthropic provider instance (lazy initialization)."""
+    global anthropic
+    if anthropic is None:
+        anthropic = create_anthropic()
+    return anthropic

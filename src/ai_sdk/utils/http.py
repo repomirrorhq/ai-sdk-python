@@ -1,7 +1,8 @@
 """HTTP utilities for AI SDK Python."""
 
 import asyncio
-from typing import Dict, Optional, TypeVar, Callable, Awaitable
+import json
+from typing import Dict, Optional, TypeVar, Callable, Awaitable, Any, AsyncGenerator
 
 import httpx
 
@@ -112,3 +113,99 @@ async def handle_http_error(response: httpx.Response, context: str) -> None:
         status_code=response.status_code,
         response_body=response.text,
     )
+
+
+async def make_request(
+    url: str,
+    method: str = "POST",
+    headers: Optional[Dict[str, str]] = None,
+    json_data: Optional[Dict[str, Any]] = None,
+    data: Optional[Any] = None,
+    timeout: float = 60.0,
+    **kwargs
+) -> Dict[str, Any]:
+    """Make an HTTP request and return JSON response.
+    
+    Args:
+        url: Request URL
+        method: HTTP method (GET, POST, etc.)
+        headers: Request headers
+        json_data: JSON data for request body
+        data: Raw data for request body
+        timeout: Request timeout in seconds
+        **kwargs: Additional httpx request arguments
+        
+    Returns:
+        JSON response as dictionary
+        
+    Raises:
+        APIError: For HTTP errors
+    """
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        request_kwargs = {
+            "method": method,
+            "url": url,
+            "headers": headers or {},
+            **kwargs
+        }
+        
+        if json_data is not None:
+            request_kwargs["json"] = json_data
+        elif data is not None:
+            request_kwargs["data"] = data
+            
+        try:
+            response = await client.request(**request_kwargs)
+            await handle_http_error(response, f"{method} {url}")
+            return response.json()
+        except httpx.RequestError as e:
+            raise APIError(f"Request failed: {e}")
+
+
+async def stream_request(
+    url: str,
+    method: str = "POST",
+    headers: Optional[Dict[str, str]] = None,
+    json_data: Optional[Dict[str, Any]] = None,
+    data: Optional[Any] = None,
+    timeout: float = 60.0,
+    **kwargs
+) -> AsyncGenerator[str, None]:
+    """Make a streaming HTTP request and yield response lines.
+    
+    Args:
+        url: Request URL
+        method: HTTP method (GET, POST, etc.)
+        headers: Request headers
+        json_data: JSON data for request body
+        data: Raw data for request body
+        timeout: Request timeout in seconds
+        **kwargs: Additional httpx request arguments
+        
+    Yields:
+        Lines from streaming response
+        
+    Raises:
+        APIError: For HTTP errors
+    """
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        request_kwargs = {
+            "method": method,
+            "url": url,
+            "headers": headers or {},
+            **kwargs
+        }
+        
+        if json_data is not None:
+            request_kwargs["json"] = json_data
+        elif data is not None:
+            request_kwargs["data"] = data
+            
+        try:
+            async with client.stream(**request_kwargs) as response:
+                await handle_http_error(response, f"{method} {url}")
+                async for line in response.aiter_lines():
+                    if line:
+                        yield line
+        except httpx.RequestError as e:
+            raise APIError(f"Streaming request failed: {e}")

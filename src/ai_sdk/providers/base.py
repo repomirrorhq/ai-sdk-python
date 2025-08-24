@@ -467,5 +467,7 @@ class TranscriptionModel(ABC):
         pass
 
 
-# Alias for backwards compatibility
+# Aliases for backwards compatibility
 BaseProvider = Provider
+BaseLanguageModel = LanguageModel
+StreamingLanguageModel = LanguageModel  # Streaming is built into LanguageModel

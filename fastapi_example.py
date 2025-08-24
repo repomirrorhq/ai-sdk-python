@@ -1,9 +1,12 @@
-#!/usr/bin/env uv run
+#!/usr/bin/env -S uv run --script
 # /// script
 # dependencies = [
 #   "uvicorn",
 #   "fastapi", 
 #   "pydantic",
+#   "httpx",
+#   "anthropic",
+#   "openai",
 # ]
 # ///
 """FastAPI Integration Example for AI SDK Python.
@@ -23,8 +26,7 @@ import sys
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-# Add the parent directory to sys.path to import ai_sdk
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# AI SDK should be available through uv
 
 # FastAPI imports
 try:

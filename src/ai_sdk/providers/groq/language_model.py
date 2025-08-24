@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, AsyncIterator, Any, Callable, Union
 import httpx
 
 from ...errors import APIError, InvalidArgumentError
-from ..base import LanguageModel, StreamingLanguageModel
+from ..base import LanguageModel
 from ..types import (
     GenerateTextResult, 
     StreamTextResult,
@@ -29,7 +29,7 @@ from .message_converter import convert_to_groq_messages, convert_from_groq_respo
 from .api_types import GroqChatCompletionRequest, GroqChatCompletionResponse
 
 
-class GroqChatLanguageModel(LanguageModel, StreamingLanguageModel):
+class GroqChatLanguageModel(LanguageModel):
     """Groq chat language model implementation."""
     
     def __init__(

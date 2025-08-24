@@ -49,6 +49,10 @@ class GroqProvider(Provider):
         self._fetch_implementation = fetch_implementation
         
     @property
+    def name(self) -> str:
+        return "groq"
+    
+    @property
     def provider_id(self) -> str:
         return "groq"
         
@@ -141,5 +145,13 @@ def create_groq(
     )
 
 
-# Default instance for convenience
-groq = create_groq()
+# Default instance for convenience (lazy initialization)
+groq = None
+
+
+def get_groq():
+    """Get the default groq provider instance (lazy initialization)."""
+    global groq
+    if groq is None:
+        groq = create_groq()
+    return groq

@@ -22,7 +22,6 @@ from ai_sdk.core.types import (
     ResponseMetadata,
     ProviderMetadata
 )
-from ai_sdk.core.generate_text import GenerateTextResult
 from ai_sdk.core.stream_text import TextStreamPart
 from ai_sdk.utils.http import make_request, stream_request
 from ai_sdk.errors.base import AISDKError

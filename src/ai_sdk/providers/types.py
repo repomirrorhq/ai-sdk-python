@@ -21,6 +21,15 @@ class FinishReason(str, Enum):
     UNKNOWN = "unknown"
 
 
+class MessageRole(str, Enum):
+    """Message role in a conversation."""
+    
+    SYSTEM = "system"
+    USER = "user"
+    ASSISTANT = "assistant"
+    TOOL = "tool"
+
+
 class Usage(BaseModel):
     """Usage statistics for a model call."""
     
@@ -199,3 +208,119 @@ class StreamResult(BaseModel):
     
     # This will be implemented as an async iterator
     pass
+
+
+class TextStreamPart(BaseModel):
+    """Text stream part (compatible with AI SDK)."""
+    
+    text_delta: Optional[str] = None
+    type: str = "text-delta"
+    
+    def __init__(self, text_delta: Optional[str] = None, **kwargs):
+        super().__init__(text_delta=text_delta, **kwargs)
+
+
+class UsageStreamPart(BaseModel):
+    """Usage stream part (compatible with AI SDK)."""
+    
+    usage: Usage
+    type: str = "usage"
+    
+    def __init__(self, usage: Usage, **kwargs):
+        super().__init__(usage=usage, **kwargs)
+
+
+class FinishStreamPart(BaseModel):
+    """Finish stream part (compatible with AI SDK)."""
+    
+    finish_reason: FinishReason
+    usage: Usage
+    type: str = "finish"
+    
+    def __init__(self, finish_reason: FinishReason, usage: Usage, **kwargs):
+        super().__init__(finish_reason=finish_reason, usage=usage, **kwargs)
+
+
+class EmbeddingResult(BaseModel):
+    """Result from embedding generation."""
+    
+    embedding: List[float]
+    usage: Usage
+    provider_metadata: Optional[ProviderMetadata] = None
+    
+    def __init__(self, embedding: List[float], usage: Usage, **kwargs):
+        super().__init__(embedding=embedding, usage=usage, **kwargs)
+
+
+class GenerateTextResult(BaseModel):
+    """Result from text generation."""
+    
+    text: str
+    content: List[Content]
+    finish_reason: FinishReason
+    usage: Usage
+    provider_metadata: Optional[ProviderMetadata] = None
+    request_metadata: Optional[Dict[str, Any]] = None
+    response_metadata: Optional[Dict[str, Any]] = None
+    
+    def __init__(
+        self,
+        text: str,
+        content: List[Content],
+        finish_reason: FinishReason,
+        usage: Usage,
+        **kwargs
+    ):
+        super().__init__(
+            text=text,
+            content=content,
+            finish_reason=finish_reason,
+            usage=usage,
+            **kwargs
+        )
+
+
+class StreamTextResult:
+    """Result from streaming text generation."""
+    
+    def __init__(self, stream):
+        self.stream = stream
+    
+    def __aiter__(self):
+        return self.stream.__aiter__()
+    
+    async def __anext__(self):
+        return await self.stream.__anext__()
+
+
+class ToolCall(BaseModel):
+    """Tool call representation."""
+    
+    tool_call_id: str
+    tool_name: str
+    args: Dict[str, Any]
+    
+    def __init__(self, tool_call_id: str, tool_name: str, args: Dict[str, Any], **kwargs):
+        super().__init__(tool_call_id=tool_call_id, tool_name=tool_name, args=args, **kwargs)
+
+
+class ToolResult(BaseModel):
+    """Tool execution result."""
+    
+    tool_call_id: str
+    result: Any
+    is_error: bool = False
+    
+    def __init__(self, tool_call_id: str, result: Any, is_error: bool = False, **kwargs):
+        super().__init__(tool_call_id=tool_call_id, result=result, is_error=is_error, **kwargs)
+
+
+class TranscriptionResult(BaseModel):
+    """Result from transcription."""
+    
+    text: str
+    segments: Optional[List[Any]] = None
+    provider_metadata: Optional[ProviderMetadata] = None
+    
+    def __init__(self, text: str, **kwargs):
+        super().__init__(text=text, **kwargs)

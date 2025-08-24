@@ -114,7 +114,7 @@ async def chat(request: ChatRequest):
 @ai_app.app.post("/chat/stream")
 async def stream_chat(request: ChatRequest):
     messages = [Message(role="user", content=request.message)]
-    
+
     async def generate():
         async for chunk in stream_text(
             model=provider(request.model),
@@ -124,7 +124,7 @@ async def stream_chat(request: ChatRequest):
             if chunk.text_delta:
                 yield f'data: {{"text": "{chunk.text_delta}"}}\n\n'
         yield "data: [DONE]\n\n"
-    
+
     return StreamingResponse(generate(), media_type="text/event-stream")
 
 app = ai_app.app  # FastAPI app ready for uvicorn

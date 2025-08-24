@@ -219,5 +219,13 @@ def create_azure(
     )
 
 
-# Default Azure OpenAI provider instance
-azure = create_azure()
+# Default Azure OpenAI provider instance (lazy initialization)
+azure = None
+
+
+def get_azure():
+    """Get the default Azure OpenAI provider instance (lazy initialization)."""
+    global azure
+    if azure is None:
+        azure = create_azure()
+    return azure
