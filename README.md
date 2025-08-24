@@ -75,7 +75,7 @@ This is a comprehensive Python port of the [Vercel AI SDK](https://github.com/ve
 
 ### Framework Integrations ✅ 4/4 COMPLETE
 - ✅ **LangChain** - Seamless integration with LangChain ecosystem
-- ✅ **LlamaIndex** - RAG and document processing integration  
+- ✅ **LlamaIndex** - RAG and document processing integration
 - ✅ **FastAPI** - Native decorators, middleware, streaming, and WebSocket support
 - ✅ **Flask** - Blueprint integration, decorators, and streaming responses
 - ✅ **Schema Validation** - Support for Pydantic, JSONSchema, Marshmallow, Cerberus
@@ -85,21 +85,47 @@ This is a comprehensive Python port of the [Vercel AI SDK](https://github.com/ve
 ### FastAPI Integration
 
 ```python
+import os
 from ai_sdk.integrations.fastapi import AIFastAPI
-from ai_sdk import create_openai
+from ai_sdk.providers.openai import create_openai
+from ai_sdk.core.generate_text import generate_text, stream_text
+from ai_sdk.providers.types import Message
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 
-provider = create_openai()
+class ChatRequest(BaseModel):
+    message: str
+    model: str = "gpt-4o-mini"
+
+# Create AI application
+provider = create_openai(api_key=os.getenv("OPENAI_API_KEY"))
 ai_app = AIFastAPI(default_provider=provider)
 
-@ai_app.chat_endpoint("/chat")
-async def chat(model, messages):
-    result = await generate_text(model=model, messages=messages)
-    return result.text
+@ai_app.app.post("/chat")
+async def chat(request: ChatRequest):
+    messages = [Message(role="user", content=request.message)]
+    result = await generate_text(
+        model=provider(request.model),
+        messages=messages,
+        max_tokens=1000
+    )
+    return {"response": result.text}
 
-@ai_app.streaming_chat_endpoint("/stream")
-async def stream_chat(model, messages):
-    async for chunk in stream_text(model=model, messages=messages):
-        yield chunk.text_delta
+@ai_app.app.post("/chat/stream")
+async def stream_chat(request: ChatRequest):
+    messages = [Message(role="user", content=request.message)]
+    
+    async def generate():
+        async for chunk in stream_text(
+            model=provider(request.model),
+            messages=messages,
+            max_tokens=1000
+        ):
+            if chunk.text_delta:
+                yield f'data: {{"text": "{chunk.text_delta}"}}\n\n'
+        yield "data: [DONE]\n\n"
+    
+    return StreamingResponse(generate(), media_type="text/event-stream")
 
 app = ai_app.app  # FastAPI app ready for uvicorn
 ```
@@ -117,7 +143,7 @@ class Response(BaseModel):
 
 schema = pydantic_schema(Response)
 
-# JSONSchema (universal) 
+# JSONSchema (universal)
 json_schema = jsonschema_schema({
     "type": "object",
     "properties": {
@@ -179,7 +205,7 @@ The example includes:
 This project uses modern Python tooling:
 
 - **uv** - Fast Python package manager
-- **ruff** - Fast Python linter and formatter  
+- **ruff** - Fast Python linter and formatter
 - **mypy** - Static type checking
 - **pytest** - Testing framework
 - **pydantic** - Data validation and serialization
