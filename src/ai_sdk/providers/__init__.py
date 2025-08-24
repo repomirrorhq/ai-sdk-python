@@ -2,6 +2,7 @@
 
 from .base import (
     Provider,
+    BaseProvider,
     LanguageModel,
     EmbeddingModel,
     ImageModel,
@@ -18,6 +19,7 @@ from .types import (
     Content,
     Message,
     ProviderMetadata,
+    ProviderSettings,
 )
 
 # Import available providers

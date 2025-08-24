@@ -465,3 +465,7 @@ class TranscriptionModel(ABC):
             Transcription result
         """
         pass
+
+
+# Alias for backwards compatibility
+BaseProvider = Provider
