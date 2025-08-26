@@ -23,6 +23,7 @@ class AssemblyAIProvider(BaseProvider):
         """
         super().__init__("assemblyai")
         self.settings = settings
+        self._provider_name = "assemblyai"
         
         # Validate API key
         if not self.settings.api_key:
@@ -30,6 +31,11 @@ class AssemblyAIProvider(BaseProvider):
                 "AssemblyAI API key is required. "
                 "Set ASSEMBLYAI_API_KEY environment variable or pass api_key parameter."
             )
+    
+    @property
+    def name(self) -> str:
+        """Name of the provider."""
+        return self._provider_name
     
     def transcription(self, model_id: AssemblyAITranscriptionModelId) -> AssemblyAITranscriptionModel:
         """Create a transcription model.

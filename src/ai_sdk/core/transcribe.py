@@ -152,3 +152,35 @@ def transcribe_sync(
         max_retries=max_retries,
         headers=headers,
     ))
+
+
+class TranscriptionSegment:
+    """Transcription segment with timing information."""
+    
+    def __init__(self, text: str, start: float, end: float):
+        self.text = text
+        self.start = start
+        self.end = end
+
+
+class TranscribeResult:
+    """Result from transcription."""
+    
+    def __init__(self, text: str, segments=None, **kwargs):
+        self.text = text
+        self.segments = segments or []
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+# Alias for consistency
+TranscribeSegment = TranscriptionSegment
+
+
+class Warning:
+    """Transcription warning."""
+    
+    def __init__(self, message: str, **kwargs):
+        self.message = message
+        for key, value in kwargs.items():
+            setattr(self, key, value)

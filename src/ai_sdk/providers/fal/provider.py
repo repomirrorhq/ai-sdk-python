@@ -27,6 +27,7 @@ class FalProvider(BaseProvider):
         """
         super().__init__("fal")
         self.settings = settings
+        self._provider_name = "fal"
         
         # Validate API key
         if not self.settings.api_key:
@@ -34,6 +35,11 @@ class FalProvider(BaseProvider):
                 "FAL API key is required. "
                 "Set FAL_API_KEY or FAL_KEY environment variable or pass api_key parameter."
             )
+    
+    @property
+    def name(self) -> str:
+        """Name of the provider."""
+        return self._provider_name
     
     def image_model(self, model_id: FalImageModelId) -> FalImageModel:
         """Create an image generation model.

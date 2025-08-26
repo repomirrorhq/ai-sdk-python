@@ -14,6 +14,18 @@ from ..utils.json import ensure_json_parsable
 VALUE = TypeVar('VALUE', bound=Any)
 
 
+class EmbedOptions:
+    """Options for embedding generation."""
+    
+    def __init__(self, 
+                 max_retries: int = 2,
+                 headers: Optional[Dict[str, str]] = None,
+                 extra_body: Optional[Dict[str, Any]] = None):
+        self.max_retries = max_retries
+        self.headers = headers
+        self.extra_body = extra_body
+
+
 class EmbeddingUsage:
     """Token usage information for embeddings."""
     

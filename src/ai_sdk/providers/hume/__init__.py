@@ -9,8 +9,8 @@ from .types import (
     HumeUtterance,
 )
 
-# Default provider instance
-hume = create_hume()
+# Default provider instance (lazy initialization to avoid requiring API key at import)
+hume = None
 
 __all__ = [
     "HumeProvider",

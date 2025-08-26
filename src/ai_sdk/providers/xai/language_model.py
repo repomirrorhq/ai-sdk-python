@@ -6,7 +6,7 @@ from typing import Any, AsyncGenerator, Dict, List, Optional, Union
 
 import httpx
 
-from ...core.generate_text import (
+from ...core.types import (
     GenerateTextOptions,
     GenerateTextResult,
     GenerateTextStreamResult,

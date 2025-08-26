@@ -171,3 +171,26 @@ def generate_speech_sync(
         max_retries=max_retries,
         headers=headers,
     ))
+
+
+# Result class for speech generation
+class SpeechGenerationResult:
+    """Result from speech generation."""
+    
+    def __init__(self, 
+                 audio_data: bytes,
+                 warnings: Optional[List[Any]] = None,
+                 provider_metadata: Optional[Dict[str, Any]] = None):
+        self.audio_data = audio_data
+        self.warnings = warnings or []
+        self.provider_metadata = provider_metadata
+
+
+class GenerateSpeechUsage:
+    """Usage statistics for speech generation."""
+    
+    def __init__(self, characters_generated: int = 0, total_cost: float = 0.0, **kwargs):
+        self.characters_generated = characters_generated
+        self.total_cost = total_cost
+        for key, value in kwargs.items():
+            setattr(self, key, value)

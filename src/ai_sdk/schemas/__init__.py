@@ -29,6 +29,14 @@ from .valibot import (
     string, number, boolean, object, array, valibot_schema
 )
 
+# Simple data classes for audio handling
+class AudioData:
+    """Audio data container."""
+    
+    def __init__(self, data: bytes, format: str = 'wav'):
+        self.data = data
+        self.format = format
+
 __all__ = [
     # Base interfaces
     "BaseSchema",
@@ -64,4 +72,7 @@ __all__ = [
     "marshmallow_schema",
     "CerberusSchema", 
     "cerberus_schema",
+    
+    # Audio data
+    "AudioData",
 ]

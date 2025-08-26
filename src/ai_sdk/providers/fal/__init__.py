@@ -14,8 +14,8 @@ from .types import (
     FalTranscriptionSettings,
 )
 
-# Default provider instance
-fal = create_fal()
+# Default provider instance (lazy initialization to avoid requiring API key at import)
+fal = None
 
 __all__ = [
     "FalProvider",

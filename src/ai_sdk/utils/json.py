@@ -5,6 +5,38 @@ from typing import Any, Optional
 
 from ..errors import InvalidResponseError
 
+# Aliases for compatibility
+parse_json = json.loads
+parse_json_response = json.loads
+
+
+def handle_json_parse_error(error: Exception, text: str) -> None:
+    """Handle JSON parse errors by raising InvalidResponseError."""
+    raise InvalidResponseError(
+        f"Failed to parse JSON response: {error}",
+        response_body=text,
+        expected_format="JSON",
+    ) from error
+
+
+def parse_json_chunk(chunk: str) -> Any:
+    """Parse JSON chunk for streaming."""
+    return json.loads(chunk)
+
+
+def parse_json_stream(stream: str) -> Any:
+    """Parse JSON stream for streaming."""
+    return json.loads(stream)
+
+
+def ensure_json_parsable(data: Any) -> Any:
+    """Ensure data is JSON parsable."""
+    try:
+        json.dumps(data)
+        return data
+    except (TypeError, ValueError):
+        return str(data)
+
 
 def secure_json_parse(
     text: str,

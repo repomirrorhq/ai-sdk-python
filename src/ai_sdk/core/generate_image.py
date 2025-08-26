@@ -192,3 +192,13 @@ def generate_image_sync(
         max_retries=max_retries,
         headers=headers,
     ))
+
+
+class GenerateImageUsage:
+    """Usage statistics for image generation."""
+    
+    def __init__(self, images_generated: int = 0, total_cost: float = 0.0, **kwargs):
+        self.images_generated = images_generated
+        self.total_cost = total_cost
+        for key, value in kwargs.items():
+            setattr(self, key, value)

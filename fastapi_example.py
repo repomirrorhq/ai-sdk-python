@@ -2,7 +2,7 @@
 # /// script
 # dependencies = [
 #   "uvicorn",
-#   "fastapi", 
+#   "fastapi",
 #   "pydantic",
 #   "httpx",
 #   "anthropic",
@@ -44,7 +44,7 @@ try:
     from ai_sdk.core.generate_object import generate_object
     from ai_sdk.integrations.fastapi import AIFastAPI
     from ai_sdk.schemas.pydantic import pydantic_schema
-    from ai_sdk.tools.core import tool
+    from ai_sdk.tools.core import simple_tool
     from ai_sdk.providers.types import Message
 except ImportError as e:
     print(f"AI SDK import error: {e}")
@@ -73,15 +73,29 @@ class BookRecommendation(BaseModel):
 
 
 # AI SDK Tools
-@tool("get_weather", "Get current weather for a location")
-def get_weather(location: str) -> str:
+@simple_tool("get_weather", "Get current weather for a location", {
+    "type": "object",
+    "properties": {
+        "location": {"type": "string", "description": "The location to get weather for"}
+    },
+    "required": ["location"]
+})
+def get_weather(input_data: dict, options) -> str:
     """Mock weather tool for demonstration."""
+    location = input_data.get("location", "unknown location")
     return f"The weather in {location} is sunny with 72°F temperature."
 
-@tool("calculate", "Perform mathematical calculations")
-def calculate(expression: str) -> str:
+@simple_tool("calculate", "Perform mathematical calculations", {
+    "type": "object",
+    "properties": {
+        "expression": {"type": "string", "description": "Mathematical expression to calculate"}
+    },
+    "required": ["expression"]
+})
+def calculate(input_data: dict, options) -> str:
     """Safe calculator for basic math."""
     try:
+        expression = input_data.get("expression", "")
         # Simple safe evaluation (production would need more security)
         result = eval(expression.replace(' ', ''))  # Simplified for demo
         return f"Result: {result}"
@@ -472,8 +486,8 @@ def main():
         print("  POST /recommend/book - 📚 Book recommendations")
         print("  WS   /ws/chat   - 🔄 WebSocket chat")
 
-        print("\n🌐 Starting server on http://localhost:8000")
-        print("📖 Open http://localhost:8000 in your browser for the interactive demo")
+        print("\n🌐 Starting server on http://localhost:8001")
+        print("📖 Open http://localhost:8001 in your browser for the interactive demo")
         print("\n💡 Features demonstrated:")
         print("  ✅ AI SDK integration with FastAPI")
         print("  ✅ Text generation and streaming")
@@ -487,8 +501,7 @@ def main():
             uvicorn.run(
                 ai_app.app,
                 host="0.0.0.0",
-                port=8000,
-                reload=True,
+                port=8001,
                 log_level="info"
             )
         except ImportError:

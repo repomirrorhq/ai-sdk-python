@@ -20,6 +20,7 @@ class HumeProvider(BaseProvider):
         """
         super().__init__("hume")
         self.settings = settings
+        self._provider_name = "hume"
         
         # Validate API key
         if not self.settings.api_key:
@@ -27,6 +28,11 @@ class HumeProvider(BaseProvider):
                 "Hume API key is required. "
                 "Set HUME_API_KEY environment variable or pass api_key parameter."
             )
+    
+    @property
+    def name(self) -> str:
+        """Name of the provider."""
+        return self._provider_name
     
     def speech_model(self) -> HumeSpeechModel:
         """Create a speech synthesis model.

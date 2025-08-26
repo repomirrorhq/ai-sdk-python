@@ -3,7 +3,7 @@
 import base64
 from typing import Any, Dict, List, Union
 
-from ...core.generate_text import Message, MessageContent, TextContent, FileContent
+from ...core.types import Message, MessageContent, TextContent, FileContent
 
 
 def convert_to_xai_messages(messages: List[Message]) -> List[Dict[str, Any]]:

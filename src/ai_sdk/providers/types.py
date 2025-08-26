@@ -324,3 +324,67 @@ class TranscriptionResult(BaseModel):
     
     def __init__(self, text: str, **kwargs):
         super().__init__(text=text, **kwargs)
+
+
+class TextPart(BaseModel):
+    """Text part for compatibility."""
+    
+    type: Literal["text"] = "text"
+    text: str
+    
+    def __init__(self, text: str, **kwargs):
+        super().__init__(text=text, **kwargs)
+
+
+class ToolCallPart(BaseModel):
+    """Tool call part for compatibility."""
+    
+    type: Literal["tool-call"] = "tool-call"
+    tool_call_id: str
+    tool_name: str
+    args: Dict[str, Any]
+    
+    def __init__(self, tool_call_id: str, tool_name: str, args: Dict[str, Any], **kwargs):
+        super().__init__(tool_call_id=tool_call_id, tool_name=tool_name, args=args, **kwargs)
+
+
+class ToolResultPart(BaseModel):
+    """Tool result part for compatibility."""
+    
+    type: Literal["tool-result"] = "tool-result"
+    tool_call_id: str
+    result: Any
+    is_error: bool = False
+    
+    def __init__(self, tool_call_id: str, result: Any, is_error: bool = False, **kwargs):
+        super().__init__(tool_call_id=tool_call_id, result=result, is_error=is_error, **kwargs)
+
+
+class EmbedResult(BaseModel):
+    """Embed result for compatibility."""
+    
+    embedding: List[float]
+    usage: Usage
+    
+    def __init__(self, embedding: List[float], usage: Usage, **kwargs):
+        super().__init__(embedding=embedding, usage=usage, **kwargs)
+
+
+class EmbedManyResult(BaseModel):
+    """Embed many result for compatibility."""
+    
+    embeddings: List[List[float]]
+    usage: Usage
+    
+    def __init__(self, embeddings: List[List[float]], usage: Usage, **kwargs):
+        super().__init__(embeddings=embeddings, usage=usage, **kwargs)
+
+
+class EmbeddingUsage(BaseModel):
+    """Embedding usage for compatibility."""
+    
+    input_tokens: int = 0
+    total_tokens: int = 0
+    
+    def __init__(self, input_tokens: int = 0, total_tokens: int = 0, **kwargs):
+        super().__init__(input_tokens=input_tokens, total_tokens=total_tokens, **kwargs)

@@ -8,8 +8,8 @@ from .types import (
     AssemblyAIProviderSettings,
 )
 
-# Default provider instance
-assemblyai = create_assemblyai()
+# Default provider instance (lazy initialization to avoid requiring API key at import)
+assemblyai = None
 
 __all__ = [
     "AssemblyAIProvider",

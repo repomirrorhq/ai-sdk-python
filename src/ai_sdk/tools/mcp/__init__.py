@@ -30,10 +30,25 @@ from .json_rpc import (
     JSONRPCMessage,
 )
 
+# Helper function for creating MCP client instances
+def create_mcp_client(transport: MCPTransport, **kwargs) -> MCPClient:
+    """Create an MCP client instance with the given transport.
+    
+    Args:
+        transport: MCP transport to use for communication
+        **kwargs: Additional configuration options for MCPClient
+        
+    Returns:
+        MCPClient instance
+    """
+    config = MCPClientConfig(**kwargs)
+    return MCPClient(transport=transport, config=config)
+
 __all__ = [
     # Client
     "MCPClient",
     "MCPClientConfig",
+    "create_mcp_client",
     # Transport
     "MCPTransport",
     "StdioMCPTransport",

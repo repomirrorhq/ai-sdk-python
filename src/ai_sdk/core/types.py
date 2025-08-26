@@ -469,3 +469,151 @@ class ResponseMetadata:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+
+class GenerateTextStreamResult:
+    """Result from streaming text generation."""
+    
+    def __init__(self, stream: Any):
+        self.stream = stream
+    
+    def __aiter__(self):
+        return self.stream.__aiter__()
+    
+    async def __anext__(self):
+        return await self.stream.__anext__()
+
+
+class SourceContent:
+    """Source content for reasoning models."""
+    
+    def __init__(self, source: str, **kwargs):
+        self.type = "source"
+        self.source = source
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+class ReasoningContent:
+    """Reasoning content for models that show reasoning."""
+    
+    def __init__(self, reasoning: str, **kwargs):
+        self.type = "reasoning"
+        self.reasoning = reasoning
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+class FileContent:
+    """File content in a message."""
+    
+    def __init__(self, file_data: bytes, mime_type: str, **kwargs):
+        self.type = "file"
+        self.file_data = file_data
+        self.mime_type = mime_type
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+
+# Image data types
+class ImageData:
+    """Image data representation."""
+    
+    def __init__(self, url: Optional[str] = None, data: Optional[bytes] = None, mime_type: Optional[str] = None):
+        self.url = url
+        self.data = data
+        self.mime_type = mime_type
+
+
+class SpeechGenerationResult:
+    """Result from speech generation."""
+    
+    def __init__(self, 
+                 audio_data: bytes,
+                 warnings: Optional[List[Any]] = None,
+                 provider_metadata: Optional[Dict[str, Any]] = None):
+        self.audio_data = audio_data
+        self.warnings = warnings or []
+        self.provider_metadata = provider_metadata
+
+
+# Message Content Union (for XAI and other providers)
+MessageContent = Union[TextContent, ImageContent, FileContent, ToolCallContent, ToolResultContent, AudioContent, SourceContent, ReasoningContent]
+
+
+class TranscriptionResult:
+    """Result from transcription."""
+    
+    def __init__(self, 
+                 text: str,
+                 language: Optional[str] = None,
+                 segments: Optional[List[Any]] = None,
+                 provider_metadata: Optional[Dict[str, Any]] = None):
+        self.text = text
+        self.language = language
+        self.segments = segments or []
+        self.provider_metadata = provider_metadata or {}
+
+
+class ToolDefinition:
+    """Definition of a tool that can be called by the model."""
+    
+    def __init__(self, name: str, description: str, parameters: Dict[str, Any]):
+        self.name = name
+        self.description = description
+        self.parameters = parameters
+
+
+class GenerateOptions:
+    """Options for generating text."""
+    
+    def __init__(self, 
+                 messages: List["Message"],
+                 max_tokens: Optional[int] = None,
+                 temperature: Optional[float] = None,
+                 top_p: Optional[float] = None,
+                 top_k: Optional[int] = None,
+                 frequency_penalty: Optional[float] = None,
+                 presence_penalty: Optional[float] = None,
+                 stop: Optional[Union[str, List[str]]] = None,
+                 seed: Optional[int] = None,
+                 tools: Optional[List[ToolDefinition]] = None,
+                 tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+                 headers: Optional[Dict[str, str]] = None,
+                 extra_body: Optional[Dict[str, Any]] = None):
+        self.messages = messages
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+        self.top_p = top_p
+        self.top_k = top_k
+        self.frequency_penalty = frequency_penalty
+        self.presence_penalty = presence_penalty
+        self.stop = stop
+        self.seed = seed
+        self.tools = tools
+        self.tool_choice = tool_choice
+        self.headers = headers
+        self.extra_body = extra_body
+
+
+class GenerateResult:
+    """Result from text generation."""
+    
+    def __init__(self, 
+                 content: List[Any],
+                 finish_reason: str,
+                 usage: Dict[str, int],
+                 provider_metadata: Optional[Dict[str, Any]] = None,
+                 request_metadata: Optional[Dict[str, Any]] = None,
+                 response_metadata: Optional[Dict[str, Any]] = None):
+        self.content = content
+        self.finish_reason = finish_reason
+        self.usage = usage
+        self.provider_metadata = provider_metadata
+        self.request_metadata = request_metadata
+        self.response_metadata = response_metadata
+
+
+class StreamOptions(GenerateOptions):
+    """Options for streaming text generation."""
+    pass

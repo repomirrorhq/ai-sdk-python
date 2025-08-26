@@ -38,6 +38,11 @@ class CerebrasProvider(Provider):
     def provider(self) -> str:
         return self._provider_name
     
+    @property
+    def name(self) -> str:
+        """Name of the provider."""
+        return self._provider_name
+    
     def language_model(self, model_id: CerebrasChatModelId) -> LanguageModel:
         """
         Create a Cerebras language model for ultra-fast text generation.

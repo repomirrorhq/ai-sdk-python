@@ -46,6 +46,11 @@ class FireworksProvider(Provider):
     def provider(self) -> str:
         return self._provider_name
     
+    @property
+    def name(self) -> str:
+        """Name of the provider."""
+        return self._provider_name
+    
     def language_model(self, model_id: FireworksChatModelId) -> LanguageModel:
         """
         Create a Fireworks language model for text generation.

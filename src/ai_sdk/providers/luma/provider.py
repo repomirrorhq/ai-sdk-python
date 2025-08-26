@@ -35,6 +35,11 @@ class LumaProvider(Provider):
     def provider(self) -> str:
         return self._provider_name
     
+    @property
+    def name(self) -> str:
+        """Name of the provider."""
+        return self._provider_name
+    
     def image_model(self, model_id: LumaImageModelId) -> ImageModel:
         """
         Create a Luma image model for image generation.

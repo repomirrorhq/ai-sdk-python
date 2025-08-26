@@ -14,15 +14,21 @@ from .base import (
     LoadAPIKeyError,
 )
 
+# Aliases for compatibility
+NoSuchModelError = ModelNotFoundError
+APICallError = APIError
+
 __all__ = [
     "AISDKError",
     "APIError",
+    "APICallError",
     "InvalidArgumentError",
     "InvalidResponseError",
     "NetworkError",
     "RateLimitError",
     "AuthenticationError",
     "ModelNotFoundError",
+    "NoSuchModelError",
     "ContentFilterError",
     "NoObjectGeneratedError",
     "LoadAPIKeyError",

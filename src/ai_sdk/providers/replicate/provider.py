@@ -43,6 +43,11 @@ class ReplicateProvider(Provider):
     def provider(self) -> str:
         return self._provider_name
     
+    @property
+    def name(self) -> str:
+        """Name of the provider."""
+        return self._provider_name
+    
     def language_model(self, model_id: ReplicateLanguageModelId) -> LanguageModel:
         """
         Create a Replicate language model for text generation.

@@ -3,13 +3,13 @@
 import os
 from typing import Optional, Dict, Any, Union
 
-from ...providers.base import AIProvider
+from ...providers.base import BaseProvider
 from ...errors import AISDKError
 from .speech_model import LMNTSpeechModel
 from .types import LMNTSpeechModelId, LMNTProviderSettings
 
 
-class LMNTProvider(AIProvider):
+class LMNTProvider(BaseProvider):
     """
     LMNT AI provider for high-quality speech synthesis.
     
@@ -119,6 +119,11 @@ class LMNTProvider(AIProvider):
     @property
     def provider_id(self) -> str:
         """Get provider identifier."""
+        return "lmnt"
+    
+    @property
+    def name(self) -> str:
+        """Name of the provider."""
         return "lmnt"
 
     def __repr__(self) -> str:
